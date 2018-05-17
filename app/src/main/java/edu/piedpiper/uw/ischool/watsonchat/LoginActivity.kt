@@ -33,9 +33,8 @@ class LoginActivity : AppCompatActivity() {
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
                         .setAvailableProviders(providers)
-                        .setTheme(R.style.AppTheme)
+                        .setTheme(R.style.LoginTheme)
                         .build(),
                 RC_SIGN_IN)
     }
-
 }
