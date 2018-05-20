@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "479652726632",
+    "firebase_url": "https://watsonchat-ba720.firebaseio.com",
+    "project_id": "watsonchat-ba720",
+    "storage_bucket": "watsonchat-ba720.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:479652726632:android:7fcf05dcc03fc726",
+        "android_client_info": {
+          "package_name": "edu.piedpiper.uw.ischool.watsonchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "479652726632-eo0d4s4raglonlks1tpjgt8pl41h4h46.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.piedpiper.uw.ischool.watsonchat",
+            "certificate_hash": "8cd40c0e2781e755c928a54064f07428ce031f54"
+          }
+        },
+        {
+          "client_id": "479652726632-ehid6g6qv5g2loo1poondiol07iv3ubk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6t_gEpez0oy_AwT-wLqvMloAaj-_0Aes"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "479652726632-ehid6g6qv5g2loo1poondiol07iv3ubk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
