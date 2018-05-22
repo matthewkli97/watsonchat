@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "479652726632-5jfum8r6k70puqsvf7demsb35bh6cinq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.piedpiper.uw.ischool.watsonchat",
+            "certificate_hash": "27ec45515dee05579264cd38c550baad936a407a"
+          }
+        },
+        {
           "client_id": "479652726632-eo0d4s4raglonlks1tpjgt8pl41h4h46.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
