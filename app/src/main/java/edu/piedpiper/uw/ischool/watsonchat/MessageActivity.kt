@@ -99,10 +99,34 @@ class MessageActivity : AppCompatActivity() {
                 myAdapter.notifyDataSetChanged()
                 mMessageRecyclerView.smoothScrollToPosition(mChats!!.size -1);
 
-                Log.i("MessageActivity", "" + mChats!!.size )
-                Log.i("MessageActivity", "" + mMessageRecyclerView.childCount )
+                //Log.i("MessageActivity", "" + mChats!!.size )
+                //Log.i("MessageActivity", "" + mMessageRecyclerView.childCount )
             }
         })
+
+
+
+        val scrollDown = findViewById(R.id.text_scroll) as TextView
+        scrollDown.visibility = View.INVISIBLE
+
+        scrollDown.setOnClickListener { view ->
+            scrollDown.visibility = View.INVISIBLE
+            mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size -1) }, 100)
+        }
+
+        mMessageRecyclerView
+                .addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                        super.onScrollStateChanged(recyclerView, newState)
+
+                        //Log.i("track", "" + mLinearLayoutManager.findLastCompletelyVisibleItemPosition())
+                        if(mLinearLayoutManager.findLastCompletelyVisibleItemPosition() <= mChats!!.size - 5) {
+                            scrollDown.visibility = View.VISIBLE
+                        } else {
+                            scrollDown.visibility = View.INVISIBLE
+                        }
+                    }
+                })
 
 
         // Firebase/EditTextx
@@ -163,6 +187,7 @@ class MessageActivity : AppCompatActivity() {
                     .addOnFailureListener(OnFailureListener {
                         Log.i("MessageActivity", "Failure")
                     })
+            mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size -1) }, 100)
             et_message.setText("")
             message = ""
         }
