@@ -14,11 +14,20 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter
 import android.widget.TextView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import com.firebase.ui.database.SnapshotParser
 import android.text.format.DateUtils.formatDateTime
+import android.widget.Button
+import android.widget.EditText
 import com.google.firebase.database.*
+import android.support.annotation.NonNull
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+
+
 
 
 class MessageActivity : AppCompatActivity() {
@@ -29,7 +38,8 @@ class MessageActivity : AppCompatActivity() {
     lateinit var mLinearLayoutManager: LinearLayoutManager
     lateinit var mMessageRecyclerView: RecyclerView
     private var mMessageAdapter:MessageAdapter? = null
-    private var mChats: MutableList<Message>? = null
+    private var mChats: ArrayList<Message>? = null
+    private var message = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +47,7 @@ class MessageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_message)
         setSupportActionBar(toolbar)
 
-        mChats = mutableListOf()
+        mChats = arrayListOf()
 //        mFirebaseAuth = FirebaseAuth.getInstance();
 //        mFirebaseUser = mFirebaseAuth.getCurrentUser();
 //
@@ -50,11 +60,15 @@ class MessageActivity : AppCompatActivity() {
 //
 //        }
 
+
         mLinearLayoutManager = LinearLayoutManager(this);
         mLinearLayoutManager.setStackFromEnd(true);
-        mMessageAdapter = MessageAdapter(this, mChats!!)
+
+        val myAdapter = MyAdapter(mChats!!)
         mMessageRecyclerView = findViewById(R.id.reyclerview_message_list) as RecyclerView
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager)
+
+        mMessageRecyclerView.adapter = myAdapter
 
         val query:DatabaseReference = FirebaseDatabase.getInstance()
                 .getReference("/general")
@@ -80,11 +94,68 @@ class MessageActivity : AppCompatActivity() {
             override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
                 val model = dataSnapshot.getValue(Message::class.java)
                 mChats!!.add(model!!)
-                mMessageAdapter!!.notifyDataSetChanged()
-                mMessageRecyclerView.setAdapter(mMessageAdapter)
+                myAdapter.notifyDataSetChanged()
+                mMessageRecyclerView.smoothScrollToPosition(mChats!!.size -1);
+
+                Log.i("MessageActivity", "" + mChats!!.size )
+                Log.i("MessageActivity", "" + mMessageRecyclerView.childCount )
             }
         })
 
+
+        // Firebase/EditTextx
+        val buttonSubmit = findViewById(R.id.button_chatbox_send) as Button
+        val et_message = findViewById(R.id.edittext_chatbox) as EditText
+
+        et_message.addTextChangedListener(object : TextWatcher {
+
+            override fun afterTextChanged(s: Editable?) {
+                message = s.toString()
+
+                if(message.length > 0) {
+                    buttonSubmit.isEnabled = true
+                } else {
+                    buttonSubmit.isEnabled = false
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+        })
+
+        et_message.setOnClickListener(object : View.OnClickListener {
+
+            override fun onClick(v: View) {
+                //make the view scroll down to the bottom
+                mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size -1) }, 100)
+            }
+        })
+
+        buttonSubmit.isEnabled = false
+        buttonSubmit.setOnClickListener { view ->
+
+            var temp = mutableMapOf<String, String>();
+            temp.put("userId", "fake user id")
+            temp.put("userName", "fake user name")
+            temp.put("text", message)
+            temp.put("userPhoto", "fake user photo")
+
+            val key = FirebaseDatabase.getInstance().getReference().child("general").push().key
+            FirebaseDatabase.getInstance().getReference().child("general").child(key).setValue(temp)
+                    .addOnSuccessListener(OnSuccessListener<Void> {
+                        Log.i("MessageActivity", "Success")
+                    })
+                    .addOnFailureListener(OnFailureListener {
+                        Log.i("MessageActivity", "Failure")
+                    })
+            et_message.setText("")
+            message = ""
+        }
     }
 }
 
