@@ -7,6 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.google.firebase.auth.FirebaseAuth
+import java.text.DateFormat.getTimeInstance
+import java.util.*
+
 
 class MyAdapter(private val myDataset: ArrayList<Message>) :
         RecyclerView.Adapter<MyAdapter.ViewHolder>() {
@@ -23,9 +26,10 @@ class MyAdapter(private val myDataset: ArrayList<Message>) :
 
 
     override fun getItemViewType(position: Int): Int {
-        val message = myDataset.get(position) as Message
+        val message = myDataset.get(position)
 
-        return if (message.userId.equals(FirebaseAuth.getInstance().uid)) {
+        // replace "position % 2 == 0"  with: message.userId.equals(FirebaseAuth.getInstance().uid)
+        return if (position%2 == 0) {
             // If the current user is the sender of the message
             VIEW_TYPE_MESSAGE_SENT
         } else {
@@ -40,8 +44,14 @@ class MyAdapter(private val myDataset: ArrayList<Message>) :
 
         Log.i("Adapter", "" + viewType)
         // create a new view
-        val textView = LayoutInflater.from(parent.context)
-                .inflate(R.layout.my_text_view, parent, false)
+
+        val textView:View
+        if(viewType == VIEW_TYPE_MESSAGE_SENT) {
+            textView = LayoutInflater.from(parent.context).inflate(R.layout.item_message_sent, parent, false)
+        } else {
+            textView = LayoutInflater.from(parent.context).inflate(R.layout.item_message_received, parent, false)
+
+        }
         // set the view's size, margins, paddings and layout parameters
 
         return ViewHolder(textView)
@@ -52,10 +62,28 @@ class MyAdapter(private val myDataset: ArrayList<Message>) :
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
 
+        if(getItemViewType(position) == VIEW_TYPE_MESSAGE_RECEIVED) {
+            //loadImageFromURL("https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg", holder.view.findViewById(R.id.image_message_profile))
+            val name = holder.view.findViewById(R.id.text_message_name) as TextView
+            name.text = myDataset[position].userName
+        }
+
+        val time = holder.view.findViewById(R.id.text_message_time) as TextView
+        time.text = getTimeDate(myDataset[position].time!!)
+
         val text = holder.view.findViewById(R.id.text_message_body) as TextView
         text.text = myDataset[position].text
     }
 
+    fun getTimeDate(timeStamp: Long): String {
+        try {
+            val dateFormat = getTimeInstance()
+            val netDate = Date(timeStamp)
+            return dateFormat.format(netDate)
+        } catch (e: Exception) {
+            return "date"
+        }
+    }
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = myDataset.size
 }

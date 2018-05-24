@@ -64,6 +64,8 @@ class MessageActivity : AppCompatActivity() {
         mLinearLayoutManager = LinearLayoutManager(this);
         mLinearLayoutManager.setStackFromEnd(true);
 
+        //mLinearLayoutManager.findLastCompletelyVisibleItemPosition()
+
         val myAdapter = MyAdapter(mChats!!)
         mMessageRecyclerView = findViewById(R.id.reyclerview_message_list) as RecyclerView
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager)
@@ -139,11 +141,19 @@ class MessageActivity : AppCompatActivity() {
         buttonSubmit.isEnabled = false
         buttonSubmit.setOnClickListener { view ->
 
-            var temp = mutableMapOf<String, String>();
-            temp.put("userId", "fake user id")
-            temp.put("userName", "fake user name")
+            var temp = mutableMapOf<Any, Any>();
+
+            //var userName = FirebaseAuth.getInstance().currentUser!!.displayName
+            //var userId = FirebaseAuth.getInstance().currentUser!!.uid
+
+            var userName = "Billy!"
+            var userId = "1"
+
+            temp.put("userId", userId)
+            temp.put("userName", userName!!)
+            temp.put("time", ServerValue.TIMESTAMP)
             temp.put("text", message)
-            temp.put("userPhoto", "fake user photo")
+
 
             val key = FirebaseDatabase.getInstance().getReference().child("general").push().key
             FirebaseDatabase.getInstance().getReference().child("general").child(key).setValue(temp)
