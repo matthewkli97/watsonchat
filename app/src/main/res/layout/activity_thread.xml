@@ -6,11 +6,38 @@
     android:layout_height="match_parent"
     tools:context=".ThreadActivity">
 
-    <Button
-        android:id="@+id/logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Logout"
-        tools:layout_editor_absoluteX="288dp"
-        tools:layout_editor_absoluteY="7dp" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView_thread"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--<android.support.design.widget.FloatingActionButton-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_marginBottom="32dp"-->
+        <!--android:layout_marginEnd="32dp"-->
+        <!--android:backgroundTint="@color/colorPrimary"-->
+        <!--android:src="@android:drawable/sym_action_chat"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--app:layout_constraintEnd_toEndOf="parent" />-->
+
 </android.support.constraint.ConstraintLayout>
+
+<!--<Button-->
+<!--android:id="@+id/logout"-->
+<!--android:layout_width="wrap_content"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:text="Logout"-->
+<!--tools:layout_editor_absoluteX="288dp"-->
+<!--tools:layout_editor_absoluteY="7dp" />-->
