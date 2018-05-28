@@ -24,29 +24,37 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val user = FirebaseAuth.getInstance().currentUser
+        println(user!!.displayName)
+        println(user!!.uid)
+        println(user!!.email)
 
-        val intent = Intent(this, ThreadActivity::class.java)
-        startActivity(intent)
+//        val intent = Intent(this, ThreadActivity::class.java)
+//        startActivity(intent)
+
+        if (user != null) { // Signed in user
+            startActivity(Intent(this, ThreadActivity::class.java))
+            finish()
+        }
 
 //        if (user != null) { // Signed in user
 //            startActivity(Intent(this, SignInActivity::class.java))
 //            finish()
 //        }
-//
-//        setContentView(R.layout.activity_login)
-//
-//        val providers = Arrays.asList(
-//                AuthUI.IdpConfig.EmailBuilder().build(),
-//                AuthUI.IdpConfig.GoogleBuilder().build()
-//        )
-//
-//        startActivityForResult(
-//                AuthUI.getInstance()
-//                        .createSignInIntentBuilder()
-//                        .setAvailableProviders(providers)
-//                        .setTheme(R.style.LoginTheme)
-//                        .build(),
-//                RC_SIGN_IN)
+
+        setContentView(R.layout.activity_login)
+
+        val providers = Arrays.asList(
+                AuthUI.IdpConfig.EmailBuilder().build(),
+                AuthUI.IdpConfig.GoogleBuilder().build()
+        )
+
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .setTheme(R.style.LoginTheme)
+                        .build(),
+                RC_SIGN_IN)
     }
 
     protected override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

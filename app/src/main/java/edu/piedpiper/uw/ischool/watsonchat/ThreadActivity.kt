@@ -3,6 +3,7 @@ package edu.piedpiper.uw.ischool.watsonchat
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -11,7 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import com.google.firebase.auth.FirebaseAuth
-import edu.piedpiper.uw.ischool.watsonchat.R.id.recyclerView_thread
 import kotlinx.android.synthetic.main.activity_thread.*
 import kotlinx.android.synthetic.main.thread_row.view.*
 
@@ -26,7 +26,11 @@ class ThreadActivity : AppCompatActivity() {
 //            FirebaseAuth.getInstance().signOut()
 //            startActivity(Intent(this, MainActivity::class.java))
 //        }
-
+        val btn = findViewById<FloatingActionButton>(R.id.btn_action) as FloatingActionButton
+        btn.setOnClickListener({
+            //new convo fragment)
+            println("Lets start a new convo")
+        })
         recyclerView_thread.layoutManager = LinearLayoutManager(this)
         recyclerView_thread.adapter = ThreadAdapter()
     }
@@ -42,6 +46,10 @@ class ThreadAdapter: RecyclerView.Adapter<CustomViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder{
         val layoutInflater = LayoutInflater.from(parent.context)
         val cellForRow = layoutInflater.inflate(R.layout.thread_row, parent, false)
+        cellForRow.setOnClickListener({
+            //go to messages
+            println("Lets see our messages")
+        });
         return CustomViewHolder(cellForRow)
     }
 
