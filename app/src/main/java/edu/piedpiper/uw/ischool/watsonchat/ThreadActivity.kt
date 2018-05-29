@@ -151,7 +151,7 @@ class CustomViewHolder(val view: View): RecyclerView.ViewHolder(view) {
         val timeStamp = view.findViewById(R.id.timeStamp) as TextView
 
         view.setOnClickListener {
-            val messageIntent = Intent(view.context, ThreadActivity::class.java)
+            val messageIntent = Intent(view.context, MessageActivity::class.java)
             messageIntent.putExtra("threadId", thread.threadId)
             view.context.startActivity(messageIntent)
         }
