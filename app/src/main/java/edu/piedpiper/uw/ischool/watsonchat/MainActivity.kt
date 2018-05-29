@@ -24,9 +24,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val user = FirebaseAuth.getInstance().currentUser
-        println(user!!.displayName)
-        println(user!!.uid)
-        println(user!!.email)
+        //println(user!!.displayName)
+        //println(user!!.uid)
+        //println(user!!.email)
 
 //        val intent = Intent(this, ThreadActivity::class.java)
 //        startActivity(intent)
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
-                startActivity(Intent(this, SignInActivity::class.java))
+                startActivity(Intent(this, ThreadActivity::class.java))
                 finish()
             }
             if (resultCode == Activity.RESULT_CANCELED) {
