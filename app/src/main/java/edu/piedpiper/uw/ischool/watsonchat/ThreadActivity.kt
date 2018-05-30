@@ -1,25 +1,22 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
-import android.app.FragmentBreadCrumbs
+
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_thread.*
-import kotlinx.android.synthetic.main.thread_row.view.*
 import java.text.DateFormat.getTimeInstance
 import java.util.*
 
@@ -30,23 +27,21 @@ class ThreadActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thread)
-        Log.i("ThreadActivity", "onCreate ThreadActivity")
-//        val button = findViewById<Button>(R.id.logout)
-//        button.setOnClickListener {
-//            FirebaseAuth.getInstance().signOut()
-//            startActivity(Intent(this, MainActivity::class.java))
-//        }
 
         mThreads = arrayListOf()
 
-        val myAdapter = ThreadAdapter(mThreads!!)
-        recyclerView_thread.layoutManager = LinearLayoutManager(this)
-        recyclerView_thread.adapter = myAdapter
+        var mThreadMap = hashMapOf<String, Int>()
 
+        val myAdapter = ThreadAdapter(mThreads!!)
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+
+        recyclerView_thread.layoutManager = layoutManager
+        recyclerView_thread.adapter = myAdapter
 
         val reference: DatabaseReference = FirebaseDatabase.getInstance()
                 .getReference("/threads")
-
 
 
         reference.addChildEventListener(object : ChildEventListener {
@@ -54,8 +49,18 @@ class ThreadActivity : AppCompatActivity() {
 
             }
 
-            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
+            override fun onChildChanged(dataSnapshot: DataSnapshot, p1: String?) {
+                val time = dataSnapshot.child("lastMessageTime").value as Long
+                val name = dataSnapshot.child("threadName").value as String
+                val lastMessage = dataSnapshot.child("lastMessageText").value as String
+                val id = dataSnapshot.key
 
+                val thread = Thread(threadName = name, lastMessageTime = time, threadId = id, lastMessageText = lastMessage)
+
+                val currIndex = mThreadMap.get(id)
+
+                mThreads!!.set(currIndex!!, thread)
+                myAdapter.notifyDataSetChanged()
             }
 
             override fun onChildRemoved(p0: DataSnapshot?) {
@@ -67,28 +72,19 @@ class ThreadActivity : AppCompatActivity() {
             }
 
             override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                //val model = dataSnapshot.getValue(Thread::class.java)
-
-                Log.i("thread", dataSnapshot.child("timeCreated").toString())
-                Log.i("thread", dataSnapshot.child("timeCreated").toString())
-
-                val time = dataSnapshot.child("timeCreated").value as Long
+                val time = dataSnapshot.child("lastMessageTime").value as Long
                 val name = dataSnapshot.child("threadName").value as String
+                val lastMessage = dataSnapshot.child("lastMessageText").value as String
                 val id = dataSnapshot.key
 
-                val thread = Thread(threadName = name, timeCreated = time, threadId = id)
-
+                val thread = Thread(threadName = name, lastMessageTime = time, threadId = id, lastMessageText = lastMessage)
 
                 mThreads!!.add(thread);
+                mThreadMap.put(id, mThreads!!.size - 1)
 
                 myAdapter.notifyDataSetChanged()
-                //mMessageRecyclerView.smoothScrollToPosition(mChats!!.size -1);
-
-                //Log.i("MessageActivity", "" + mChats!!.size )
-                //Log.i("MessageActivity", "" + mMessageRecyclerView.childCount )
             }
         })
-
 
         val btn = findViewById<FloatingActionButton>(R.id.btn_action) as FloatingActionButton
         btn.setOnClickListener({
@@ -98,13 +94,22 @@ class ThreadActivity : AppCompatActivity() {
             //var userName = FirebaseAuth.getInstance().currentUser!!.displayName
             //var userId = FirebaseAuth.getInstance().currentUser!!.uid
 
-            temp.put("timeCreated", ServerValue.TIMESTAMP)
-            temp.put("threadName", "Temp Thread Name")
+            temp.put("lastMessageTime", ServerValue.TIMESTAMP)
+            temp.put("threadName", "New Thread")
+            temp.put("lastMessageText", " ")
+
+            var userMap = mutableMapOf<Any, String?>();
+            userMap.put(FirebaseAuth.getInstance().currentUser!!.uid, FirebaseAuth.getInstance().currentUser!!.displayName)
+            temp.put("users", userMap)
 
             val key = reference.push().key
             reference.child(key).setValue(temp)
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success")
+
+                        val messageIntent = Intent(this, MessageActivity::class.java)
+                        messageIntent.putExtra("threadId", key)
+                        startActivity(messageIntent)
                     })
                     .addOnFailureListener(OnFailureListener {
                         Log.i("MessageActivity", "Failure")
@@ -157,8 +162,8 @@ class CustomViewHolder(val view: View): RecyclerView.ViewHolder(view) {
         }
 
         contactName.text = thread.threadName;
-        lastText.text = "temp text";
-        timeStamp.text = getTimeDate(thread.timeCreated!!)
+        lastText.text = thread.lastMessageText;
+        timeStamp.text = getTimeDate(thread.lastMessageTime!!)
     }
 
     private fun getTimeDate(timeStamp: Long): String {

@@ -110,11 +110,7 @@ class MessageActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {
                 message = s.toString()
 
-                if(message.length > 0) {
-                    buttonSubmit.isEnabled = true
-                } else {
-                    buttonSubmit.isEnabled = false
-                }
+                buttonSubmit.isEnabled = message.length > 0
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -152,7 +148,22 @@ class MessageActivity : AppCompatActivity() {
                     .addOnFailureListener(OnFailureListener {
                         Log.i("MessageActivity", "Failure")
                     })
+
             mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size -1) }, 100)
+
+
+            var threadMap = mutableMapOf<String, Any>();
+            threadMap.put("lastMessageTime", ServerValue.TIMESTAMP)
+            threadMap.put("lastMessageText", userName!! + " : " + message)
+
+            FirebaseDatabase.getInstance().getReference().child("threads").child(thread).updateChildren(threadMap)
+                    .addOnSuccessListener(OnSuccessListener<Void> {
+                        Log.i("MessageActivity", "Success to update thread latest message")
+                    })
+                    .addOnFailureListener(OnFailureListener {
+                        Log.i("MessageActivity", "Failure to update thread latest message")
+                    })
+
             et_message.setText("")
             message = ""
         }

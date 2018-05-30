@@ -10,6 +10,7 @@ import java.util.*
 import java.util.Arrays.asList
 import android.os.Bundle
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 
 /**
@@ -61,6 +62,9 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
+
+                FirebaseDatabase.getInstance().reference.child("users")
+
                 startActivity(Intent(this, ThreadActivity::class.java))
                 finish()
             }
