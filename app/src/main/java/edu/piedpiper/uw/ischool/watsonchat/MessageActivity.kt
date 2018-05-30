@@ -154,7 +154,7 @@ class MessageActivity : AppCompatActivity() {
 
             var threadMap = mutableMapOf<String, Any>();
             threadMap.put("lastMessageTime", ServerValue.TIMESTAMP)
-            threadMap.put("lastMessageText", userName!! + " : " + message)
+            threadMap.put("lastMessageText", userName!! + ": " + message)
 
             FirebaseDatabase.getInstance().getReference().child("threads").child(thread).updateChildren(threadMap)
                     .addOnSuccessListener(OnSuccessListener<Void> {
@@ -167,5 +167,33 @@ class MessageActivity : AppCompatActivity() {
             et_message.setText("")
             message = ""
         }
+    }
+
+    override fun startActivity(intent: Intent) {
+        super.startActivity(intent)
+        overridePendingTransitionEnter()
+    }
+    /**
+     * Overrides the pending Activity transition by performing the "Enter" animation.
+     */
+    protected fun overridePendingTransitionEnter() {
+        overridePendingTransition(R.anim.slide_to_left, R.anim.slide_from_right)
+    }
+
+    /**
+     * Overrides the pending Activity transition by performing the "Exit" animation.
+     */
+    protected fun overridePendingTransitionExit() {
+        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransitionExit()
+    }
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransitionExit()
     }
 }

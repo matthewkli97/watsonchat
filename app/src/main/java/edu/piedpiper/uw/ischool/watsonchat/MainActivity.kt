@@ -74,4 +74,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun startActivity(intent: Intent) {
+        super.startActivity(intent)
+        overridePendingTransitionEnter()
+    }
+
+    /**
+     * Overrides the pending Activity transition by performing the "Enter" animation.
+     */
+    protected fun overridePendingTransitionEnter() {
+        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
+    }
+
+
 }
