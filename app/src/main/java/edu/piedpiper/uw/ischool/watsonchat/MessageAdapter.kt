@@ -29,7 +29,7 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
         val message = myDataset.get(position)
 
         // replace "position % 2 == 0"  with: message.userId.equals(FirebaseAuth.getInstance().uid)
-        return if (position%2 == 0) {
+        return if (message.userId.equals(FirebaseAuth.getInstance().currentUser!!.uid.toString())) {
             // If the current user is the sender of the message
             VIEW_TYPE_MESSAGE_SENT
         } else {
