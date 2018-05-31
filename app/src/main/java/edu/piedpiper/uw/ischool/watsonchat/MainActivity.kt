@@ -10,6 +10,7 @@ import java.util.*
 import java.util.Arrays.asList
 import android.os.Bundle
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 
 /**
@@ -24,11 +25,22 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val user = FirebaseAuth.getInstance().currentUser
+        //println(user!!.displayName)
+        //println(user!!.uid)
+        //println(user!!.email)
+
+//        val intent = Intent(this, ThreadActivity::class.java)
+//        startActivity(intent)
 
         if (user != null) { // Signed in user
-            startActivity(Intent(this, SignInActivity::class.java))
+            startActivity(Intent(this, ThreadActivity::class.java))
             finish()
         }
+
+//        if (user != null) { // Signed in user
+//            startActivity(Intent(this, SignInActivity::class.java))
+//            finish()
+//        }
 
         setContentView(R.layout.activity_login)
 
@@ -50,7 +62,10 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
-                startActivity(Intent(this, SignInActivity::class.java))
+
+                FirebaseDatabase.getInstance().reference.child("users")
+
+                startActivity(Intent(this, ThreadActivity::class.java))
                 finish()
             }
             if (resultCode == Activity.RESULT_CANCELED) {
@@ -58,5 +73,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    override fun startActivity(intent: Intent) {
+        super.startActivity(intent)
+        overridePendingTransitionEnter()
+    }
+
+    /**
+     * Overrides the pending Activity transition by performing the "Enter" animation.
+     */
+    protected fun overridePendingTransitionEnter() {
+        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
+    }
+
 
 }
