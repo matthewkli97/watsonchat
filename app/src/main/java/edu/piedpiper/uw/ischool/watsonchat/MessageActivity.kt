@@ -129,7 +129,6 @@ class MessageActivity : AppCompatActivity() {
         buttonSubmit.setOnClickListener { view ->
 
             var temp = mutableMapOf<Any, Any>();
-
             var userName = FirebaseAuth.getInstance().currentUser!!.displayName
             var userId = FirebaseAuth.getInstance().currentUser!!.uid
 
@@ -138,7 +137,6 @@ class MessageActivity : AppCompatActivity() {
             temp.put("userName", userName!!)
             temp.put("time", ServerValue.TIMESTAMP)
             temp.put("text", message)
-
 
             val key = FirebaseDatabase.getInstance().getReference().child("threads").child(thread).child("chats").push().key
             FirebaseDatabase.getInstance().getReference().child("threads").child(thread).child("chats").child(key).setValue(temp)
@@ -151,12 +149,11 @@ class MessageActivity : AppCompatActivity() {
 
             mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size -1) }, 100)
 
-
             var threadMap = mutableMapOf<String, Any>();
             threadMap.put("lastMessageTime", ServerValue.TIMESTAMP)
             threadMap.put("lastMessageText", userName!! + ": " + message)
 
-            FirebaseDatabase.getInstance().getReference().child("threads").child(thread).updateChildren(threadMap)
+            FirebaseDatabase.getInstance().getReference().child("threadRef").child(thread).updateChildren(threadMap)
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success to update thread latest message")
                     })
@@ -173,6 +170,7 @@ class MessageActivity : AppCompatActivity() {
         super.startActivity(intent)
         overridePendingTransitionEnter()
     }
+
     /**
      * Overrides the pending Activity transition by performing the "Enter" animation.
      */
