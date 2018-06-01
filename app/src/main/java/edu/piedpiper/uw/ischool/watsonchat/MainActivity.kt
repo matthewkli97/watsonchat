@@ -37,11 +37,6 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
-//        if (user != null) { // Signed in user
-//            startActivity(Intent(this, SignInActivity::class.java))
-//            finish()
-//        }
-
         setContentView(R.layout.activity_login)
 
         val providers = Arrays.asList(
@@ -56,6 +51,14 @@ class MainActivity : AppCompatActivity() {
                         .setTheme(R.style.LoginTheme)
                         .build(),
                 RC_SIGN_IN)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            startActivity(Intent(this, ThreadActivity::class.java))
+            finish()
+        }
     }
 
     protected override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

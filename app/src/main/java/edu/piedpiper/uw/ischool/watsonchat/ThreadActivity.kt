@@ -8,9 +8,6 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
@@ -19,6 +16,13 @@ import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_thread.*
 import java.text.DateFormat.getTimeInstance
 import java.util.*
+import android.R.menu
+import android.view.*
+import android.widget.Toolbar
+import android.content.DialogInterface
+import android.os.Build
+import android.support.v7.app.AlertDialog
+
 
 class ThreadActivity : AppCompatActivity() {
 
@@ -115,6 +119,37 @@ class ThreadActivity : AppCompatActivity() {
                         Log.i("MessageActivity", "Failure")
                     })
         })
+    }
+
+
+    public override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.toolbar, menu)
+        return true
+    }
+
+    public override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_settings -> {
+            val builder: AlertDialog.Builder
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            } else {
+                builder = AlertDialog.Builder(this)
+            }
+            builder.setTitle("Sign Out")
+                    .setMessage("Are you sure you want to sign out?")
+                    .setPositiveButton(android.R.string.yes, DialogInterface.OnClickListener { dialog, which ->
+                        FirebaseAuth.getInstance().signOut()
+                    })
+                    .setNegativeButton(android.R.string.no, DialogInterface.OnClickListener { dialog, which ->
+                        // do nothing
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show()
+            true
+        } else -> {
+            super.onOptionsItemSelected(item)
+        }
     }
 
     private fun threadClicked(thread : Thread) {

@@ -41,28 +41,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="MissingConstraints" />
 
-    <!--<android.support.design.widget.FloatingActionButton-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_alignParentBottom="true"-->
-    <!--android:layout_alignParentRight="true"-->
-    <!--android:layout_marginBottom="32dp"-->
-    <!--android:layout_marginEnd="32dp"-->
-    <!--android:backgroundTint="@color/colorPrimary"-->
-    <!--android:src="@android:drawable/sym_action_chat"-->
-    <!--app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--app:layout_constraintEnd_toEndOf="parent" />-->
 
 </android.support.constraint.ConstraintLayout>
-
-    <!--<android.support.design.widget.FloatingActionButton-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_alignParentBottom="true"-->
-    <!--android:layout_alignParentRight="true"-->
-    <!--android:layout_marginBottom="32dp"-->
-    <!--android:layout_marginEnd="32dp"-->
-    <!--android:backgroundTint="@color/colorPrimary"-->
-    <!--android:src="@android:drawable/sym_action_chat"-->
-    <!--app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--app:layout_constraintEnd_toEndOf="parent" />-->
