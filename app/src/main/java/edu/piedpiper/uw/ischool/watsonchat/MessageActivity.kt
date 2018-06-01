@@ -151,12 +151,11 @@ class MessageActivity : AppCompatActivity() {
 
             mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size -1) }, 100)
 
-
             var threadMap = mutableMapOf<String, Any>();
             threadMap.put("lastMessageTime", ServerValue.TIMESTAMP)
             threadMap.put("lastMessageText", userName!! + ": " + message)
 
-            FirebaseDatabase.getInstance().getReference().child("threads").child(thread).updateChildren(threadMap)
+            FirebaseDatabase.getInstance().getReference().child("threadRef").child(thread).updateChildren(threadMap)
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success to update thread latest message")
                     })
