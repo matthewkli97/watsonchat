@@ -129,7 +129,6 @@ class MessageActivity : AppCompatActivity() {
         buttonSubmit.setOnClickListener { view ->
 
             var temp = mutableMapOf<Any, Any>();
-
             var userName = FirebaseAuth.getInstance().currentUser!!.displayName
             var userId = FirebaseAuth.getInstance().currentUser!!.uid
 
@@ -138,7 +137,6 @@ class MessageActivity : AppCompatActivity() {
             temp.put("userName", userName!!)
             temp.put("time", ServerValue.TIMESTAMP)
             temp.put("text", message)
-
 
             val key = FirebaseDatabase.getInstance().getReference().child("threads").child(thread).child("chats").push().key
             FirebaseDatabase.getInstance().getReference().child("threads").child(thread).child("chats").child(key).setValue(temp)
@@ -172,6 +170,7 @@ class MessageActivity : AppCompatActivity() {
         super.startActivity(intent)
         overridePendingTransitionEnter()
     }
+
     /**
      * Overrides the pending Activity transition by performing the "Enter" animation.
      */

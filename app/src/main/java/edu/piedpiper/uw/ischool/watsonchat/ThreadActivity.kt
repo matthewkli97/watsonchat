@@ -15,22 +15,36 @@ import android.widget.TextView
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_thread.*
 import java.text.DateFormat.getTimeInstance
 import java.util.*
+import kotlin.collections.HashMap
 
 class ThreadActivity : AppCompatActivity() {
-
+    lateinit var mFirebaseAuth: FirebaseAuth
+    var mFirebaseUser: FirebaseUser? = null
     private var mThreads: ArrayList<Thread>? = null
+    private var mThreadMap:HashMap<String,Int>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thread)
 
-        mThreads = arrayListOf()
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
-        var mThreadMap = hashMapOf<String, Int>()
+        // Preliminary check to ensure login user
+        if (mFirebaseUser == null) {
+            // Not signed in, launch the Sign In activity
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
+        mThreads = arrayListOf()
+        mThreadMap = hashMapOf()
 
         val myAdapter = ThreadAdapter(mThreads!!)
         val layoutManager = LinearLayoutManager(this)
@@ -43,11 +57,8 @@ class ThreadActivity : AppCompatActivity() {
         val reference: DatabaseReference = FirebaseDatabase.getInstance()
                 .getReference("/threadRef")
 
-
         reference.addChildEventListener(object : ChildEventListener {
-            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
-
-            }
+            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {}
 
             override fun onChildChanged(dataSnapshot: DataSnapshot, p1: String?) {
                 val time = dataSnapshot.child("lastMessageTime").value as Long
@@ -56,37 +67,55 @@ class ThreadActivity : AppCompatActivity() {
                 val id = dataSnapshot.key
 
                 val thread = Thread(threadName = name, lastMessageTime = time, threadId = id, lastMessageText = lastMessage)
-                val currIndex = mThreadMap.get(id)
+                val currIndex = mThreadMap!!.get(id)
 
-                mThreads!!.set(currIndex!!, thread)
-                myAdapter.notifyDataSetChanged()
+                var valid = false
+                dataSnapshot.child("users").children.forEach({
+                    if(it.key.equals(mFirebaseUser!!.uid)) {
+                        valid = true
+                    }
+                })
+
+                if(valid) {
+                    if(currIndex == null) {
+                        mThreads!!.add(thread);
+                        mThreadMap!!.put(id, mThreads!!.size - 1)
+                    } else {
+                        mThreads!!.set(currIndex!!, thread)
+                    }
+                    myAdapter.notifyDataSetChanged()
+                }
+
             }
 
-            override fun onChildRemoved(p0: DataSnapshot?) {
-
-            }
-
-            override fun onCancelled(p0: DatabaseError?) {
-
-            }
+            override fun onChildRemoved(p0: DataSnapshot?) {}
+            override fun onCancelled(p0: DatabaseError?) {}
 
             override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
                 val time = dataSnapshot.child("lastMessageTime").value as Long
                 val name = dataSnapshot.child("threadName").value as String
                 val lastMessage = dataSnapshot.child("lastMessageText").value as String
                 val id = dataSnapshot.key
-
                 val thread = Thread(threadName = name, lastMessageTime = time, threadId = id, lastMessageText = lastMessage)
 
-                mThreads!!.add(thread);
-                mThreadMap.put(id, mThreads!!.size - 1)
+                var valid = false
+                dataSnapshot.child("users").children.forEach({
+                    if(it.key.equals(mFirebaseUser!!.uid)) {
+                        valid = true
+                    }
+                })
 
-                myAdapter.notifyDataSetChanged()
+                if(valid) {
+                    mThreads!!.add(thread);
+                    mThreadMap!!.put(id, mThreads!!.size - 1)
+                    myAdapter.notifyDataSetChanged()
+                }
             }
         })
 
-        val btn = findViewById<FloatingActionButton>(R.id.btn_action) as FloatingActionButton
+        val btn = findViewById(R.id.btn_action) as FloatingActionButton
         btn.setOnClickListener({
+
             val userId = FirebaseAuth.getInstance().currentUser!!.uid
             val userName = FirebaseAuth.getInstance().currentUser!!.displayName as String
             var threadRefObj = mutableMapOf<Any, Any>();
@@ -95,34 +124,13 @@ class ThreadActivity : AppCompatActivity() {
             threadRefObj.put("lastMessageTime", ServerValue.TIMESTAMP)
             threadRefObj.put("threadName", "New Thread")
             threadRefObj.put("lastMessageText", " ")
-
+            userObj.put(userId, userName)
+            threadRefObj.put("users", userObj)
 
             // REFERS TO THREADREF.key
             val key = reference.push().key
 
             reference.child(key).setValue(threadRefObj)
-                    .addOnSuccessListener(OnSuccessListener<Void> {
-                        Log.i("MessageActivity", "Success")
-                    })
-                    .addOnFailureListener(OnFailureListener {
-                        Log.i("MessageActivity", "Failure")
-                    })
-
-            // Build new Thread
-            val userRef = FirebaseDatabase.getInstance().reference.child("user").child(userId).child("threads")
-
-            userRef.child(key).setValue(true)
-                    .addOnSuccessListener(OnSuccessListener<Void> {
-                        Log.i("MessageActivity", "Success add user reference to thread")
-                    })
-                    .addOnFailureListener(OnFailureListener {
-                        Log.i("MessageActivity", "Failure")
-                    })
-
-            userObj.put(userId, userName)
-            // Add user to thread
-            val thread = FirebaseDatabase.getInstance().reference.child("threads")
-            thread.child(key).child("users").setValue(userObj)
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success")
 
