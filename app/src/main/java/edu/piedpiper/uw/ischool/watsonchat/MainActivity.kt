@@ -9,6 +9,10 @@ import com.firebase.ui.auth.AuthUI
 import java.util.*
 import java.util.Arrays.asList
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
@@ -24,23 +28,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val user = FirebaseAuth.getInstance().currentUser
-        //println(user!!.displayName)
-        //println(user!!.uid)
-        //println(user!!.email)
-
-//        val intent = Intent(this, ThreadActivity::class.java)
-//        startActivity(intent)
-
-        if (user != null) { // Signed in user
-            startActivity(Intent(this, ThreadActivity::class.java))
-            finish()
-        }
-
-//        if (user != null) { // Signed in user
-//            startActivity(Intent(this, SignInActivity::class.java))
-//            finish()
-//        }
 
         setContentView(R.layout.activity_login)
 
@@ -62,11 +49,19 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
+                val user = FirebaseAuth.getInstance().currentUser
+                val uid = FirebaseAuth.getInstance().uid
+                val userRef = FirebaseDatabase.getInstance().reference.child("users").child(uid)
 
-                FirebaseDatabase.getInstance().reference.child("users")
-
-                startActivity(Intent(this, ThreadActivity::class.java))
-                finish()
+                userRef.setValue(user!!.displayName)
+                        .addOnSuccessListener(OnSuccessListener<Void> {
+                            Log.i("MessageActivity", "Dafux")
+                            startActivity(Intent(this, ThreadActivity::class.java))
+                            finish()
+                        })
+                        .addOnFailureListener(OnFailureListener {
+                            Log.i("MessageActivity", "Failure")
+                        })
             }
             if (resultCode == Activity.RESULT_CANCELED) {
 
