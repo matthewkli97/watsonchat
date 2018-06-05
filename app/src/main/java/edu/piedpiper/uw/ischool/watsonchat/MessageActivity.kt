@@ -163,6 +163,17 @@ class MessageActivity : AppCompatActivity() {
                         Log.i("MessageActivity", "Failure to update thread latest message")
                     })
 
+            val messageRef = FirebaseDatabase.getInstance().reference.child("userMessages").child(userId).child("chat")
+            val messageKey = messageRef.push().key
+
+            messageRef.child(messageKey).setValue(message)
+                    .addOnSuccessListener(OnSuccessListener<Void> {
+                        Log.i("MessageActivity", "Success to update thread latest message")
+                    })
+                    .addOnFailureListener(OnFailureListener {
+                        Log.i("MessageActivity", "Failure to update thread latest message")
+                    })
+
             et_message.setText("")
             message = ""
         }

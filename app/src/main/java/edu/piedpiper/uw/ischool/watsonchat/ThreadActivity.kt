@@ -56,8 +56,9 @@ class ThreadActivity : AppCompatActivity() {
 
         val reference: DatabaseReference = FirebaseDatabase.getInstance()
                 .getReference("/threadRef")
+        val referenceQuery: Query = reference.orderByChild("lastMessageTime")
 
-        reference.addChildEventListener(object : ChildEventListener {
+        referenceQuery.addChildEventListener(object : ChildEventListener {
             override fun onChildMoved(p0: DataSnapshot?, p1: String?) {}
 
             override fun onChildChanged(dataSnapshot: DataSnapshot, p1: String?) {
@@ -144,6 +145,7 @@ class ThreadActivity : AppCompatActivity() {
 
                         val messageIntent = Intent(this, MessageActivity::class.java)
                         messageIntent.putExtra("threadId", key)
+                        messageIntent.putExtra("threadName", "New Thread")
                         startActivity(messageIntent)
                     })
                     .addOnFailureListener(OnFailureListener {

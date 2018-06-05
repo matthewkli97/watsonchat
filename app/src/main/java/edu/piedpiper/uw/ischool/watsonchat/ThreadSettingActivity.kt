@@ -69,6 +69,7 @@ class ThreadSettingActivity : AppCompatActivity() {
         et_name.setText(etThreadName)
 
         val buttonSubmit = findViewById(R.id.btn_save) as Button
+        buttonSubmit.isEnabled = false;
 
         buttonSubmit.setOnClickListener({
             val nameRef = FirebaseDatabase.getInstance().reference.child("threadRef").child(threadId).child("threadName")
