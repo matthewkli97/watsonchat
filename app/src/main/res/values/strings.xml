@@ -15,4 +15,5 @@
     </string>
     <string name="title_activity_message">MessageActivity</string>
     <string name="title_activity_new_thread">NewThreadActivity</string>
+    <string name="title_activity_thread_setting">ThreadSettingActivity</string>
 </resources>
