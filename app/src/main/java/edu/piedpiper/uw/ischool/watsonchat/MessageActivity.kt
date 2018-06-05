@@ -12,6 +12,8 @@ import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -28,7 +30,8 @@ class MessageActivity : AppCompatActivity() {
     lateinit var mMessageRecyclerView: RecyclerView
     private var mChats: ArrayList<Message>? = null
     private var message = ""
-    private var thread:String? = null
+    private var threadId:String? = null
+    private var threadName:String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,11 +51,12 @@ class MessageActivity : AppCompatActivity() {
             return
         }
 
-        thread = intent.getStringExtra("threadId")
+        threadId = intent.getStringExtra("threadId")
+        threadName = intent.getStringExtra("threadName")
+        this.setTitle(threadName);
 
         mLinearLayoutManager = LinearLayoutManager(this);
         mLinearLayoutManager.setStackFromEnd(true);
-
 
         // Prep recycler adapter
         val myAdapter = MessageAdapter(mChats!!)
@@ -61,7 +65,7 @@ class MessageActivity : AppCompatActivity() {
         mMessageRecyclerView.adapter = myAdapter
 
         // Prep database reference for querying of firebase database
-        val query:DatabaseReference = FirebaseDatabase.getInstance().reference.child("threads").child(thread).child("chats")
+        val query:DatabaseReference = FirebaseDatabase.getInstance().reference.child("threads").child(threadId).child("chats")
         query.addChildEventListener(object : ChildEventListener {
             override fun onChildMoved(p0: DataSnapshot?, p1: String?) {}
             override fun onChildChanged(p0: DataSnapshot?, p1: String?) {}
@@ -72,7 +76,7 @@ class MessageActivity : AppCompatActivity() {
                 val model = dataSnapshot.getValue(Message::class.java)
                 mChats!!.add(model!!)
                 myAdapter.notifyDataSetChanged()
-                mMessageRecyclerView.smoothScrollToPosition(mChats!!.size -1);
+                mMessageRecyclerView.smoothScrollToPosition(mChats!!.size - 1);
             }
         })
 
@@ -86,19 +90,18 @@ class MessageActivity : AppCompatActivity() {
         }
 
         // Scroll listener for showing scroll button option
-        mMessageRecyclerView
-                .addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                    override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
-                        super.onScrollStateChanged(recyclerView, newState)
+        mMessageRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
 
-                        //Log.i("track", "" + mLinearLayoutManager.findLastCompletelyVisibleItemPosition())
-                        if(mLinearLayoutManager.findLastCompletelyVisibleItemPosition() <= mChats!!.size - 5) {
-                            scrollDown.visibility = View.VISIBLE
-                        } else {
-                            scrollDown.visibility = View.INVISIBLE
-                        }
+                //Log.i("track", "" + mLinearLayoutManager.findLastCompletelyVisibleItemPosition())
+                if(mLinearLayoutManager.findLastCompletelyVisibleItemPosition() <= mChats!!.size - 5) {
+                    scrollDown.visibility = View.VISIBLE
+                } else {
+                    scrollDown.visibility = View.INVISIBLE
                     }
-                })
+            }
+        })
 
 
         // Firebase/EditText
@@ -121,7 +124,7 @@ class MessageActivity : AppCompatActivity() {
 
             override fun onClick(v: View) {
                 //make the view scroll down to the bottom
-                mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size -1) }, 100)
+                mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size - 1) }, 100)
             }
         })
 
@@ -132,14 +135,13 @@ class MessageActivity : AppCompatActivity() {
             var userName = FirebaseAuth.getInstance().currentUser!!.displayName
             var userId = FirebaseAuth.getInstance().currentUser!!.uid
 
-
             temp.put("userId", userId)
             temp.put("userName", userName!!)
             temp.put("time", ServerValue.TIMESTAMP)
             temp.put("text", message)
 
-            val key = FirebaseDatabase.getInstance().getReference().child("threads").child(thread).child("chats").push().key
-            FirebaseDatabase.getInstance().getReference().child("threads").child(thread).child("chats").child(key).setValue(temp)
+            val key = FirebaseDatabase.getInstance().getReference().child("threads").child(threadId).child("chats").push().key
+            FirebaseDatabase.getInstance().getReference().child("threads").child(threadId).child("chats").child(key).setValue(temp)
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success")
                     })
@@ -147,13 +149,24 @@ class MessageActivity : AppCompatActivity() {
                         Log.i("MessageActivity", "Failure")
                     })
 
-            mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size -1) }, 100)
+            mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size - 1) }, 100)
 
             var threadMap = mutableMapOf<String, Any>();
             threadMap.put("lastMessageTime", ServerValue.TIMESTAMP)
             threadMap.put("lastMessageText", userName!! + ": " + message)
 
-            FirebaseDatabase.getInstance().getReference().child("threadRef").child(thread).updateChildren(threadMap)
+            FirebaseDatabase.getInstance().getReference().child("threadRef").child(threadId).updateChildren(threadMap)
+                    .addOnSuccessListener(OnSuccessListener<Void> {
+                        Log.i("MessageActivity", "Success to update thread latest message")
+                    })
+                    .addOnFailureListener(OnFailureListener {
+                        Log.i("MessageActivity", "Failure to update thread latest message")
+                    })
+
+            val messageRef = FirebaseDatabase.getInstance().reference.child("userMessages").child(userId).child("chat")
+            val messageKey = messageRef.push().key
+
+            messageRef.child(messageKey).setValue(message)
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success to update thread latest message")
                     })
@@ -163,6 +176,26 @@ class MessageActivity : AppCompatActivity() {
 
             et_message.setText("")
             message = ""
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    // Code adapted from: https://medium.com/@101/android-toolbar-for-appcompatactivity-671b1d10f354
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when(item!!.itemId){
+            R.id.Menu -> {
+                val settingIntent = Intent(this, ThreadSettingActivity::class.java)
+                settingIntent.putExtra("threadId", threadId)
+                settingIntent.putExtra("threadName", threadName)
+                startActivity(settingIntent)
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 

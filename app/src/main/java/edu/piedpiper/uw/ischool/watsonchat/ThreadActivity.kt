@@ -56,8 +56,9 @@ class ThreadActivity : AppCompatActivity() {
 
         val reference: DatabaseReference = FirebaseDatabase.getInstance()
                 .getReference("/threadRef")
+        val referenceQuery: Query = reference.orderByChild("lastMessageTime")
 
-        reference.addChildEventListener(object : ChildEventListener {
+        referenceQuery.addChildEventListener(object : ChildEventListener {
             override fun onChildMoved(p0: DataSnapshot?, p1: String?) {}
 
             override fun onChildChanged(dataSnapshot: DataSnapshot, p1: String?) {
@@ -81,11 +82,19 @@ class ThreadActivity : AppCompatActivity() {
                         mThreads!!.add(thread);
                         mThreadMap!!.put(id, mThreads!!.size - 1)
                     } else {
-                        mThreads!!.set(currIndex!!, thread)
+                        mThreads!!.removeAt(currIndex)
+                        mThreadMap!!.remove(id)
+                        mThreads!!.add(thread);
+                        mThreadMap!!.put(id, mThreads!!.size - 1)
                     }
                     myAdapter.notifyDataSetChanged()
+                } else {
+                    if(currIndex != null) {
+                        mThreads!!.removeAt(currIndex)
+                        mThreadMap!!.remove(id)
+                        myAdapter.notifyDataSetChanged()
+                    }
                 }
-
             }
 
             override fun onChildRemoved(p0: DataSnapshot?) {}
@@ -136,18 +145,13 @@ class ThreadActivity : AppCompatActivity() {
 
                         val messageIntent = Intent(this, MessageActivity::class.java)
                         messageIntent.putExtra("threadId", key)
+                        messageIntent.putExtra("threadName", "New Thread")
                         startActivity(messageIntent)
                     })
                     .addOnFailureListener(OnFailureListener {
                         Log.i("MessageActivity", "Failure")
                     })
         })
-    }
-
-    private fun threadClicked(thread : Thread) {
-        val messageIntent = Intent(this, ThreadActivity::class.java)
-        messageIntent.putExtra("threadId", thread.threadId)
-        startActivity(messageIntent)
     }
 
     override fun finish() {
@@ -214,6 +218,7 @@ class CustomViewHolder(val view: View): RecyclerView.ViewHolder(view) {
         view.setOnClickListener {
             val messageIntent = Intent(view.context, MessageActivity::class.java)
             messageIntent.putExtra("threadId", thread.threadId)
+            messageIntent.putExtra("threadName", thread.threadName)
             view.context.startActivity(messageIntent)
         }
 
