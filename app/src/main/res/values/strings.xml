@@ -13,7 +13,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
-    <string name="title_activity_message">MessageActivity</string>
+    <string name="title_activity_message">Threads</string>
     <string name="title_activity_new_thread">NewThreadActivity</string>
-    <string name="title_activity_thread_setting">ThreadSettingActivity</string>
+    <string name="title_activity_thread_setting">Thread Settings</string>
 </resources>

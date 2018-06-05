@@ -32,6 +32,11 @@ class MessageActivity : AppCompatActivity() {
     private var message = ""
     private var threadId:String? = null
     private var threadName:String? = null
+    private var chatListener:ChildEventListener? = null
+    private var query:DatabaseReference? = null
+
+    private var chatNameListener:ValueEventListener? = null
+    private var chatNameRef:DatabaseReference? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,8 +70,8 @@ class MessageActivity : AppCompatActivity() {
         mMessageRecyclerView.adapter = myAdapter
 
         // Prep database reference for querying of firebase database
-        val query:DatabaseReference = FirebaseDatabase.getInstance().reference.child("threads").child(threadId).child("chats")
-        query.addChildEventListener(object : ChildEventListener {
+        query = FirebaseDatabase.getInstance().reference.child("threads").child(threadId).child("chats")
+        chatListener = query!!.addChildEventListener(object : ChildEventListener {
             override fun onChildMoved(p0: DataSnapshot?, p1: String?) {}
             override fun onChildChanged(p0: DataSnapshot?, p1: String?) {}
             override fun onChildRemoved(p0: DataSnapshot?) {}
@@ -76,9 +81,23 @@ class MessageActivity : AppCompatActivity() {
                 val model = dataSnapshot.getValue(Message::class.java)
                 mChats!!.add(model!!)
                 myAdapter.notifyDataSetChanged()
-                mMessageRecyclerView.smoothScrollToPosition(mChats!!.size - 1);
+                mMessageRecyclerView.smoothScrollToPosition(mChats!!.size - 1)
             }
         })
+
+        // Prep database reference for querying of firebase database
+        chatNameRef = FirebaseDatabase.getInstance().reference.child("threadRef").child(threadId).child("threadName")
+        chatNameListener = chatNameRef!!.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot?) {
+                setTitle(p0!!.value.toString())
+            }
+
+            override fun onCancelled(p0: DatabaseError?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+        })
+
 
         // Scroll down option --> user scrolls up
         val scrollDown = findViewById(R.id.text_scroll) as TextView

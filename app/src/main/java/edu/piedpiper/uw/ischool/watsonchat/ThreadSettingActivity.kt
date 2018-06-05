@@ -19,6 +19,10 @@ class ThreadSettingActivity : AppCompatActivity() {
     var threadName:String? = null
     var etThreadName:String? = null
 
+
+    var userRef:DatabaseReference? = null
+    var userListener:ChildEventListener? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thread_setting)
@@ -50,8 +54,8 @@ class ThreadSettingActivity : AppCompatActivity() {
 
 
         //val userRef = FirebaseDatabase.getInstance().reference.child("threadRef").child(threadId).child("users")
-        val userRef = FirebaseDatabase.getInstance().reference.child("users")
-        userRef.addChildEventListener(object : ChildEventListener {
+        userRef = FirebaseDatabase.getInstance().reference.child("users")
+        userListener = userRef!!.addChildEventListener(object : ChildEventListener {
             override fun onChildMoved(p0: DataSnapshot?, p1: String?) {}
             override fun onChildChanged(p0: DataSnapshot?, p1: String?) {}
             override fun onChildRemoved(p0: DataSnapshot?) {}
@@ -69,13 +73,14 @@ class ThreadSettingActivity : AppCompatActivity() {
         et_name.setText(etThreadName)
 
         val buttonSubmit = findViewById(R.id.btn_save) as Button
-        buttonSubmit.isEnabled = false;
+        buttonSubmit.isEnabled = false
 
         buttonSubmit.setOnClickListener({
             val nameRef = FirebaseDatabase.getInstance().reference.child("threadRef").child(threadId).child("threadName")
 
             nameRef.setValue(etThreadName)
             threadName = etThreadName
+            buttonSubmit.isEnabled = false
         })
 
         et_name.addTextChangedListener(object : TextWatcher {
@@ -90,6 +95,11 @@ class ThreadSettingActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
+    }
+
+    override fun onStop() {
+        super.onStop()
+        userRef!!.removeEventListener(userListener)
     }
 
 }
