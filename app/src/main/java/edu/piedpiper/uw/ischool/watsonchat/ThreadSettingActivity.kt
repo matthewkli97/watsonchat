@@ -13,6 +13,11 @@ import android.widget.ListView
 import com.google.firebase.database.*
 
 import kotlinx.android.synthetic.main.activity_thread_setting.*
+import android.content.DialogInterface
+import android.support.v7.app.AlertDialog
+//import javax.swing.text.StyleConstants.setIcon
+
+
 
 class ThreadSettingActivity : AppCompatActivity() {
 
@@ -114,6 +119,7 @@ class ThreadSettingActivity : AppCompatActivity() {
         })
 
     }
+
 
     override fun onStop() {
         super.onStop()
