@@ -20,6 +20,7 @@ import android.widget.EditText
 import com.google.firebase.database.*
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
+//import edu.piedpiper.uw.ischool.watsonchat.R.id.toolbar
 
 
 class MessageActivity : AppCompatActivity() {
