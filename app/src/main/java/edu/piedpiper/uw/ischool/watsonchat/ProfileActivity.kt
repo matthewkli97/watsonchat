@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.os.StrictMode
+import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.widget.Button
 import com.google.firebase.auth.FirebaseAuth
@@ -16,6 +17,7 @@ import com.ibm.watson.developer_cloud.personality_insights.v3.model.ProfileOptio
 //import com.ibm.watson.developer_cloud.personality_insights.v3.PersonalityInsights
 //import com.ibm.watson.developer_cloud.personality_insights.v3.model.ProfileOptions
 import java.io.*
+import java.util.*
 
 
 class ProfileActivity : AppCompatActivity() {
@@ -81,110 +83,138 @@ class ProfileActivity : AppCompatActivity() {
                     root.mkdirs()
                 }
 
-                val filer = deviceReader(root)
+                val sc: Scanner = Scanner(FileInputStream(root))
+                var count: Int = 0
+                while (sc.hasNext()) {
+                    sc.next();
+                    count++
+                }
+                sc.close()
 
-                // sets up Profile and executes the call to IBM Watson
-                val options = ProfileOptions.Builder()
-                        .text(filer)
-                        .rawScores(true).build()
-                val profile = service.profile(options).execute()
+                if (count > 100) {
+                    val filer = deviceReader(root)
 
-                if(profile.consumptionPreferences != null) {
-                    print(profile.consumptionPreferences.size)
+                    // sets up Profile and executes the call to IBM Watson
+                    val options = ProfileOptions.Builder()
+                            .text(filer)
+                            .rawScores(true).build()
+                    val profile = service.profile(options).execute()
+
+                    if (profile.consumptionPreferences != null) {
+                        print(profile.consumptionPreferences.size)
+                    } else {
+                        print("NULL")
+                    }
+
+                    val consumption: HashMap<String, Map<String, Double>> = HashMap()
+                    val values: HashMap<String, ArrayList<Double>> = HashMap()
+                    val needs: HashMap<String, ArrayList<Double>> = HashMap()
+                    val personality: HashMap<HashMap<String, ArrayList<Double>>, HashMap<String, ArrayList<Double>>> = HashMap()
+
+                    /**
+                     * This processes the data for consumption and puts it into a map for easy access
+                     */
+
+                    if (profile.consumptionPreferences != null) {
+                        for (a in 0..profile.consumptionPreferences.size - 1) {
+                            val category: String = profile.consumptionPreferences[a].consumptionPreferenceCategoryId
+                            val items: HashMap<String, Double> = HashMap<String, Double>()
+
+                            for (b in 0..profile.consumptionPreferences[a].consumptionPreferences.size - 1) {
+                                items.put(profile.consumptionPreferences[a].consumptionPreferences[b].name,
+                                        profile.consumptionPreferences[a].consumptionPreferences[b].score)
+                            }
+
+                            consumption.put(category, items)
+                        }
+                    }
+
+                    /**
+                     * This processes the data for 'values' and puts it into a map with the value name
+                     * as the key and raw score & percentile as values
+                     */
+                    if (profile.values != null) {
+                        for (a in 0..profile.values.size - 1) {
+                            val value: String = profile.values[a].name
+                            val percentile: Double = profile.values[a].percentile
+                            val raw: Double = profile.values[a].rawScore
+                            values.put(value, arrayListOf(percentile * 100.0, raw * 100.0))
+                        }
+                    }
+
+                    println("VALUES MAIN" + values)
+
+                    /**
+                     * This processes the data for 'needs' and puts it into a map with the value name
+                     * as the key and raw score & percentile as values
+                     */
+
+                    if (profile.needs != null) {
+                        for (a in 0..profile.needs.size - 1) {
+                            val need: String = profile.needs[a].name
+                            val percentile: Double = profile.needs[a].percentile
+                            val raw: Double = profile.needs[a].rawScore
+
+                            needs.put(need, arrayListOf(percentile * 100.0, raw * 100.0))
+                        }
+                    }
+
+                    /**
+                     * This processes the data for the 'personality' category.
+                     */
+                    if (profile.personality != null) {
+                        for (a in 0..profile.personality.size - 1) {
+                            val topLevel: HashMap<String, ArrayList<Double>> = HashMap()
+                            val temp: HashMap<String, ArrayList<Double>> = HashMap()
+
+                            val p = profile.personality[a].name
+                            val child = profile.personality[a].children
+
+                            topLevel.put(p, arrayListOf(profile.personality[a].percentile * 100.0, profile.personality[a].rawScore * 100.0))
+                            for (b in 0..child.size - 1) {
+
+                                val name: String = child[b].name
+                                val percentile: Double = child[b].percentile
+                                val raw: Double = child[b].rawScore
+
+                                temp.put(name, arrayListOf(percentile * 100.0, raw * 100.0))
+                            }
+                            personality.put(topLevel, temp)
+                        }
+                    }
+
+                    // Attaches all the data maps to send with the intent to the overview screen
+                    val bundle: Bundle = Bundle()
+                    bundle.putSerializable("consumption", consumption)
+                    bundle.putSerializable("values", values)
+                    bundle.putSerializable("needs", needs)
+                    bundle.putSerializable("personality", personality)
+                    bundle.putLong("words", profile.wordCount)
+
+                    val intent: Intent = Intent(this, Personality::class.java)
+                    intent.putExtras(bundle)
+                    startActivity(intent)
+
+                    profiler = profile.toString()
                 } else {
-                    print("NULL")
-                }
+                    val dialog = AlertDialog.Builder(this)
 
-                val consumption : HashMap<String, Map<String, Double>> = HashMap()
-                val values : HashMap<String, ArrayList<Double>> = HashMap()
-                val needs : HashMap<String, ArrayList<Double>> = HashMap()
-                val personality : HashMap<HashMap<String, ArrayList<Double>>, HashMap<String, ArrayList<Double>>>  = HashMap()
+                    dialog.setTitle("Not Enough Data")
 
-                /**
-                 * This processes the data for consumption and puts it into a map for easy access
-                 */
+                    dialog.setMessage("You have sent fewer than 100 words! We need at least 100 words " +
+                            "to analyze before we can give you a proper personality assessment. Also note " +
+                            "that the more words you send. The more accurate the assessment will be!")
 
-                if (profile.consumptionPreferences != null) {
-                    for (a in 0..profile.consumptionPreferences.size - 1) {
-                        val category: String = profile.consumptionPreferences[a].consumptionPreferenceCategoryId
-                        val items: HashMap<String, Double> = HashMap<String, Double>()
 
-                        for (b in 0..profile.consumptionPreferences[a].consumptionPreferences.size - 1) {
-                            items.put(profile.consumptionPreferences[a].consumptionPreferences[b].name,
-                                    profile.consumptionPreferences[a].consumptionPreferences[b].score)
-                        }
+                    dialog.setNeutralButton("Okay") { _, _ ->
 
-                        consumption.put(category, items)
                     }
+
+
+                    val d: AlertDialog = dialog.create()
+
+                    d.show()
                 }
-
-                /**
-                 * This processes the data for 'values' and puts it into a map with the value name
-                 * as the key and raw score & percentile as values
-                 */
-                if (profile.values != null) {
-                    for (a in 0..profile.values.size - 1) {
-                        val value: String = profile.values[a].name
-                        val percentile: Double = profile.values[a].percentile
-                        val raw: Double = profile.values[a].rawScore
-                        values.put(value, arrayListOf(percentile * 100.0, raw * 100.0))
-                    }
-                }
-
-                println("VALUES MAIN" + values)
-
-                /**
-                 * This processes the data for 'needs' and puts it into a map with the value name
-                 * as the key and raw score & percentile as values
-                 */
-
-                if (profile.needs != null) {
-                    for (a in 0..profile.needs.size - 1) {
-                        val need: String = profile.needs[a].name
-                        val percentile: Double = profile.needs[a].percentile
-                        val raw: Double = profile.needs[a].rawScore
-
-                        needs.put(need, arrayListOf(percentile * 100.0, raw * 100.0))
-                    }
-                }
-
-                /**
-                 * This processes the data for the 'personality' category.
-                 */
-                if (profile.personality != null) {
-                    for (a in 0..profile.personality.size - 1) {
-                        val topLevel: HashMap<String, ArrayList<Double>> = HashMap()
-                        val temp: HashMap<String, ArrayList<Double>> = HashMap()
-
-                        val p = profile.personality[a].name
-                        val child = profile.personality[a].children
-
-                        topLevel.put(p, arrayListOf(profile.personality[a].percentile * 100.0, profile.personality[a].rawScore * 100.0))
-                        for (b in 0..child.size - 1) {
-
-                            val name: String = child[b].name
-                            val percentile: Double = child[b].percentile
-                            val raw: Double = child[b].rawScore
-
-                            temp.put(name, arrayListOf(percentile * 100.0, raw * 100.0))
-                        }
-                        personality.put(topLevel, temp)
-                    }
-                }
-
-                // Attaches all the data maps to send with the intent to the overview screen
-                val bundle : Bundle = Bundle()
-                bundle.putSerializable("consumption", consumption)
-                bundle.putSerializable("values", values)
-                bundle.putSerializable("needs", needs)
-                bundle.putSerializable("personality", personality)
-                bundle.putLong("words", profile.wordCount)
-
-                val intent : Intent = Intent(this, Personality::class.java)
-                intent.putExtras(bundle)
-                startActivity(intent)
-
-                profiler = profile.toString()
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
