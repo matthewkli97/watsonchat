@@ -58,28 +58,19 @@ class MainActivity : AppCompatActivity() {
             startMessage()
         }
 
-        registerReceiver(broadcastReceiver, IntentFilter("AIRPLANE_MODE"))
     }
 
-    var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
-            val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
-            if (!isConnected) {
-                if (isAirplaneModeOn(context)) {
-                    context.sendBroadcast(Intent("AIRPLANE_MODE"))
-                    Toast.makeText(context, "Airplane Mode", Toast.LENGTH_SHORT).show()
-                    displayAlert()
-                }
-                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+    override fun onResume() {
+        super.onResume()
+        if (isAirplaneModeOn(applicationContext)) displayAlert()
+        registerReceiver(airplaneReceiver, IntentFilter("AIRPLANE_MODE"))
+    }
 
-            } else {
-                Toast.makeText(context, "Working", Toast.LENGTH_SHORT).show()
-            }
+    var airplaneReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            displayAlert()
         }
     }
-
 
     private fun displayAlert() {
         val builder = AlertDialog.Builder(this)
@@ -142,92 +133,33 @@ class MainActivity : AppCompatActivity() {
     protected fun overridePendingTransitionEnter() {
         overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
     }
-//
-//    override fun onResume() {
-//        super.onResume()
-//
-//        airplaneMode()
-//        checkConnection()
-//    }
 
-//    @Suppress("DEPRECATED_IDENTITY_EQUALS")
-//    fun airplaneMode() {
-//        if (Settings.Global.getInt(this.contentResolver,
-//                        Settings.Global.AIRPLANE_MODE_ON, 0) !== 0) {
-//            val dialog = AlertDialog.Builder(this)
-//
-//            dialog.setTitle("Airplane Mode")
-//            dialog.setMessage("You currently have airplane mode on so features such as chat" +
-//                    " and Watson personality analysis might not work as expected. Do you want to head over to settings" +
-//                    " to turn it off?")
-//
-//            dialog.setPositiveButton("Yes") { _, _ ->
-//                val intent = Intent(android.provider.Settings.ACTION_AIRPLANE_MODE_SETTINGS)
-//                startActivity(intent)
-//
-//            }
-//
-//            dialog.setNegativeButton("No") { _, _ ->
-//
-//            }
-//
-//            val d: AlertDialog = dialog.create()
-//
-//            d.show()
-//        }
-//    }
 
-//    private fun checkConnection() {
-//        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//        val activeNetworkInfo = connectivityManager.activeNetworkInfo
-//
-//        if (activeNetworkInfo != null && !activeNetworkInfo.isConnected) {
-//            val dialog = AlertDialog.Builder(this)
-//
-//            dialog.setTitle("No Connection")
-//
-//            dialog.setMessage("You currently have no internet connection so features such as chat" +
-//                    " and Watson personality analysis will not work as expected. Do you want to connect" +
-//                    " to a wifi network?")
-//
-//            dialog.setPositiveButton("Yes") { _, _ ->
-//                val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
-//                startActivity(intent)
-//
-//            }
-//
-//            dialog.setNegativeButton("No") { _, _ ->
-//
-//            }
-//
-//
-//            val d: AlertDialog = dialog.create()
-//
-//            d.show()
-//        }
-//    }
+
+
+
 
     class NetworkChangeReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-//            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//            val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
-//            val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
-//            if (!isConnected) {
-//                if (isAirplaneModeOn(context)) {
-//                    context.sendBroadcast(Intent("AIRPLANE_MODE"))
-//                    Toast.makeText(context, "Airplane Mode", Toast.LENGTH_SHORT).show()
-//                }
-//                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
-//
-//            } else {
-//                Toast.makeText(context, "Working", Toast.LENGTH_SHORT).show()
-//            }
+    override fun onReceive(context: Context?, intent: Intent?) {
+        val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+        if (isAirplaneModeOn(context)) {
+            Toast.makeText(context, "Turn Off Airplane Mode", Toast.LENGTH_SHORT).show()
         }
+        if (!isWifiOn(context)) {
+            Toast.makeText(context, "Turn Wifi On", Toast.LENGTH_SHORT).show()
+        }
+    }
 
 
         private fun isAirplaneModeOn(context: Context): Boolean {
             return Settings.Global.getInt(context.contentResolver,
                     Settings.Global.AIRPLANE_MODE_ON, 0) != 0
+        }
+
+        private fun isWifiOn(context: Context): Boolean {
+            return Settings.Global.getInt(context.contentResolver,
+                    Settings.Global.WIFI_ON, 0) != 0
         }
     }
 
