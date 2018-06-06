@@ -192,3 +192,5 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = myDataset.size
 }
+
+

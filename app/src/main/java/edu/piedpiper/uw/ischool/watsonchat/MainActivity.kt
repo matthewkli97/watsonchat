@@ -2,13 +2,11 @@ package edu.piedpiper.uw.ischool.watsonchat
 import android.app.Activity
 import android.support.v7.app.AppCompatActivity
 import android.app.LoaderManager.LoaderCallbacks
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 
 import android.database.Cursor
 import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import com.firebase.ui.auth.AuthUI
 import java.util.*
 import java.util.Arrays.asList
@@ -23,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import android.os.Build
 import android.provider.Settings
+import android.support.v4.app.ActivityCompat.startActivityForResult
 
 
 /**
@@ -39,8 +38,8 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_login)
 
-        airplaneMode()
-        checkConnection()
+//        airplaneMode()
+//        checkConnection()
 
         val providers = Arrays.asList(
                 AuthUI.IdpConfig.EmailBuilder().build(),
@@ -58,7 +57,51 @@ class MainActivity : AppCompatActivity() {
         } else {
             startMessage()
         }
+
+        registerReceiver(broadcastReceiver, IntentFilter("AIRPLANE_MODE"))
     }
+
+    var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+            val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+            if (!isConnected) {
+                if (isAirplaneModeOn(context)) {
+                    context.sendBroadcast(Intent("AIRPLANE_MODE"))
+                    Toast.makeText(context, "Airplane Mode", Toast.LENGTH_SHORT).show()
+                    displayAlert()
+                }
+                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+
+            } else {
+                Toast.makeText(context, "Working", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
+    private fun displayAlert() {
+        val builder = AlertDialog.Builder(this)
+        builder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, id ->
+            startActivityForResult(Intent(android.provider.Settings.ACTION_AIRPLANE_MODE_SETTINGS), 0)
+        })
+        builder.setNegativeButton("No", DialogInterface.OnClickListener { dialog, id ->
+            dialog.cancel()
+        })
+        builder.setMessage("Airplane mode is on. Would you like to turn off Airplane mode?")
+                .setTitle("Connectivity Issues")
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    private fun isAirplaneModeOn(context: Context): Boolean {
+        Log.i("Main", "AirplaneModeOn")
+        return Settings.Global.getInt(context.contentResolver,
+                Settings.Global.AIRPLANE_MODE_ON, 0) != 0
+    }
+
 
     private fun startMessage() {
         val user = FirebaseAuth.getInstance().currentUser
@@ -99,68 +142,92 @@ class MainActivity : AppCompatActivity() {
     protected fun overridePendingTransitionEnter() {
         overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
     }
+//
+//    override fun onResume() {
+//        super.onResume()
+//
+//        airplaneMode()
+//        checkConnection()
+//    }
 
-    override fun onResume() {
-        super.onResume()
+//    @Suppress("DEPRECATED_IDENTITY_EQUALS")
+//    fun airplaneMode() {
+//        if (Settings.Global.getInt(this.contentResolver,
+//                        Settings.Global.AIRPLANE_MODE_ON, 0) !== 0) {
+//            val dialog = AlertDialog.Builder(this)
+//
+//            dialog.setTitle("Airplane Mode")
+//            dialog.setMessage("You currently have airplane mode on so features such as chat" +
+//                    " and Watson personality analysis might not work as expected. Do you want to head over to settings" +
+//                    " to turn it off?")
+//
+//            dialog.setPositiveButton("Yes") { _, _ ->
+//                val intent = Intent(android.provider.Settings.ACTION_AIRPLANE_MODE_SETTINGS)
+//                startActivity(intent)
+//
+//            }
+//
+//            dialog.setNegativeButton("No") { _, _ ->
+//
+//            }
+//
+//            val d: AlertDialog = dialog.create()
+//
+//            d.show()
+//        }
+//    }
 
-        airplaneMode()
-        checkConnection()
-    }
+//    private fun checkConnection() {
+//        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+//
+//        if (activeNetworkInfo != null && !activeNetworkInfo.isConnected) {
+//            val dialog = AlertDialog.Builder(this)
+//
+//            dialog.setTitle("No Connection")
+//
+//            dialog.setMessage("You currently have no internet connection so features such as chat" +
+//                    " and Watson personality analysis will not work as expected. Do you want to connect" +
+//                    " to a wifi network?")
+//
+//            dialog.setPositiveButton("Yes") { _, _ ->
+//                val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
+//                startActivity(intent)
+//
+//            }
+//
+//            dialog.setNegativeButton("No") { _, _ ->
+//
+//            }
+//
+//
+//            val d: AlertDialog = dialog.create()
+//
+//            d.show()
+//        }
+//    }
 
-    @Suppress("DEPRECATED_IDENTITY_EQUALS")
-    fun airplaneMode() {
-        if (Settings.Global.getInt(this.contentResolver,
-                        Settings.Global.AIRPLANE_MODE_ON, 0) !== 0) {
-            val dialog = AlertDialog.Builder(this)
-
-            dialog.setTitle("Airplane Mode")
-            dialog.setMessage("You currently have airplane mode on so features such as chat" +
-                    " and Watson personality analysis might not work as expected. Do you want to head over to settings" +
-                    " to turn it off?")
-
-            dialog.setPositiveButton("Yes") { _, _ ->
-                val intent = Intent(android.provider.Settings.ACTION_AIRPLANE_MODE_SETTINGS)
-                startActivity(intent)
-
-            }
-
-            dialog.setNegativeButton("No") { _, _ ->
-
-            }
-
-            val d: AlertDialog = dialog.create()
-
-            d.show()
+    class NetworkChangeReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+//            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//            val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+//            val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+//            if (!isConnected) {
+//                if (isAirplaneModeOn(context)) {
+//                    context.sendBroadcast(Intent("AIRPLANE_MODE"))
+//                    Toast.makeText(context, "Airplane Mode", Toast.LENGTH_SHORT).show()
+//                }
+//                Toast.makeText(context, "Network Error", Toast.LENGTH_SHORT).show()
+//
+//            } else {
+//                Toast.makeText(context, "Working", Toast.LENGTH_SHORT).show()
+//            }
         }
-    }
-
-    private fun checkConnection() {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworkInfo = connectivityManager.activeNetworkInfo
-
-        if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
-            val dialog = AlertDialog.Builder(this)
-
-            dialog.setTitle("No Connection")
-
-            dialog.setMessage("You currently have no internet connection so features such as chat" +
-                    " and Watson personality analysis will not work as expected. Do you want to connect" +
-                    " to a wifi network?")
-
-            dialog.setPositiveButton("Yes") { _, _ ->
-                val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
-                startActivity(intent)
-
-            }
-
-            dialog.setNegativeButton("No") { _, _ ->
-
-            }
 
 
-            val d: AlertDialog = dialog.create()
-
-            d.show()
+        private fun isAirplaneModeOn(context: Context): Boolean {
+            return Settings.Global.getInt(context.contentResolver,
+                    Settings.Global.AIRPLANE_MODE_ON, 0) != 0
         }
     }
 
