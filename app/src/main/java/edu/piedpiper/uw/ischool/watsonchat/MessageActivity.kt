@@ -245,7 +245,9 @@ class MessageActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        overridePendingTransitionExit()
+        //overridePendingTransitionExit()
+        startActivity(Intent(this, ThreadActivity::class.java))
+        finish()
     }
 
     override fun finish() {

@@ -185,10 +185,15 @@ class ThreadActivity : AppCompatActivity() {
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success")
 
-                        val messageIntent = Intent(this, MessageActivity::class.java)
-                        messageIntent.putExtra("threadId", key)
-                        messageIntent.putExtra("threadName", "New Thread")
-                        startActivity(messageIntent)
+//                        val messageIntent = Intent(this, MessageActivity::class.java)
+//                        messageIntent.putExtra("threadId", key)
+//                        messageIntent.putExtra("threadName", "New Thread")
+//                        startActivity(messageIntent)
+
+                        val settingIntent = Intent(this, ThreadSettingActivity::class.java)
+                        settingIntent.putExtra("threadId", key)
+                        settingIntent.putExtra("threadName", "New Thread")
+                        startActivity(settingIntent)
                     })
                     .addOnFailureListener(OnFailureListener {
                         Log.i("MessageActivity", "Failure")

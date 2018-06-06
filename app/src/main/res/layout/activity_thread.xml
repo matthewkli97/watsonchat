@@ -37,8 +37,10 @@
         android:layout_marginBottom="32dp"
         android:layout_marginEnd="32dp"
         android:src="@android:drawable/sym_action_chat"
+        app:backgroundTint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:rippleColor="?attr/colorButtonNormal"
         tools:ignore="MissingConstraints" />
 
     <!--<android.support.design.widget.FloatingActionButton-->

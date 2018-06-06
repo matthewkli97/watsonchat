@@ -1,5 +1,6 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
@@ -72,15 +73,32 @@ class ThreadSettingActivity : AppCompatActivity() {
         val et_name = findViewById(R.id.te_threadName) as EditText
         et_name.setText(etThreadName)
 
-        val buttonSubmit = findViewById(R.id.btn_save) as Button
-        buttonSubmit.isEnabled = false
+        //SET NAME BUTTON
 
-        buttonSubmit.setOnClickListener({
+//        val buttonSubmit = findViewById(R.id.btn_save) as Button
+//        buttonSubmit.isEnabled = false
+//
+//        buttonSubmit.setOnClickListener({
+//            val nameRef = FirebaseDatabase.getInstance().reference.child("threadRef").child(threadId).child("threadName")
+//
+//            nameRef.setValue(etThreadName)
+//            threadName = etThreadName
+//            buttonSubmit.isEnabled = false
+//        })
+
+
+        //SAVE BUTTON
+        val saveButton = findViewById(R.id.button) as Button
+        saveButton.setOnClickListener({
             val nameRef = FirebaseDatabase.getInstance().reference.child("threadRef").child(threadId).child("threadName")
 
             nameRef.setValue(etThreadName)
             threadName = etThreadName
-            buttonSubmit.isEnabled = false
+            val messageIntent = Intent(this, MessageActivity::class.java)
+            messageIntent.putExtra("threadId", threadId)
+            messageIntent.putExtra("threadName", threadName)
+            startActivity(messageIntent)
+
         })
 
         et_name.addTextChangedListener(object : TextWatcher {
@@ -88,7 +106,7 @@ class ThreadSettingActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {
                 etThreadName = s.toString()
 
-                buttonSubmit.isEnabled = (!etThreadName.equals(threadName) && etThreadName!!.length > 0)
+                //buttonSubmit.isEnabled = (!etThreadName.equals(threadName) && etThreadName!!.length > 0)
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -101,5 +119,6 @@ class ThreadSettingActivity : AppCompatActivity() {
         super.onStop()
         userRef!!.removeEventListener(userListener)
     }
+
 
 }
