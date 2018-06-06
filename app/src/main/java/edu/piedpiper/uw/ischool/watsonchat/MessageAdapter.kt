@@ -69,6 +69,7 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
     }
 
     // Replace the contents of a view (invoked by the layout manager)
+    //Had to add this weird SuppressLint to get Pop Up to work
     @SuppressLint("RestrictedApi")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // - get element from your dataset at this position
@@ -78,6 +79,8 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
             //loadImageFromURL("https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg", holder.view.findViewById(R.id.image_message_profile))
             val name = holder.view.findViewById(R.id.text_message_name) as TextView
             name.text = myDataset[position].userName
+
+            // Pop Up Event Listener
             holder.itemView.setOnClickListener{
                 Log.i("Look!", myDataset[position].text )
                 val policy = StrictMode.ThreadPolicy.Builder()
@@ -119,7 +122,7 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
                 }
                 Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show()
             }
-
+// Pop Up event listener ends here
         }
 
         val time = holder.view.findViewById(R.id.text_message_time) as TextView
