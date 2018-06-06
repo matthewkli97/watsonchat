@@ -196,6 +196,12 @@ class MessageActivity : AppCompatActivity() {
             et_message.setText("")
             message = ""
         }
+
+        val messages = findViewById(R.id.reyclerview_message_list) as RecyclerView
+        val tester = messages.adapter.toString()
+        Log.i("Debug", "Debugging101")
+        Log.i("Debug", "KEVIN " + tester)
+        print(tester)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -8,9 +8,7 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
@@ -28,9 +26,31 @@ class ThreadActivity : AppCompatActivity() {
     private var mThreads: ArrayList<Thread>? = null
     private var mThreadMap:HashMap<String,Int>? = null
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_profile, menu)
+        return true
+    }
+
+    // Code adapted from: https://medium.com/@101/android-toolbar-for-appcompatactivity-671b1d10f354
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when(item!!.itemId){
+            R.id.action_profile -> {
+                val settingIntent = Intent(this, ProfileActivity::class.java)
+                //settingIntent.putExtra("threadId", threadId)
+                //settingIntent.putExtra("threadName", threadName)
+                startActivity(settingIntent)
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thread)
+
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
