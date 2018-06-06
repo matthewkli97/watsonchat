@@ -185,10 +185,15 @@ class ThreadActivity : AppCompatActivity() {
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success")
 
-                        val messageIntent = Intent(this, MessageActivity::class.java)
-                        messageIntent.putExtra("threadId", key)
-                        messageIntent.putExtra("threadName", "New Thread")
-                        startActivity(messageIntent)
+//                        val messageIntent = Intent(this, MessageActivity::class.java)
+//                        messageIntent.putExtra("threadId", key)
+//                        messageIntent.putExtra("threadName", "New Thread")
+//                        startActivity(messageIntent)
+
+                        val settingIntent = Intent(this, ThreadSettingActivity::class.java)
+                        settingIntent.putExtra("threadId", key)
+                        settingIntent.putExtra("threadName", "New Thread")
+                        startActivity(settingIntent)
                     })
                     .addOnFailureListener(OnFailureListener {
                         Log.i("MessageActivity", "Failure")
@@ -221,9 +226,13 @@ class ThreadActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
-        overridePendingTransitionExit()
-    }
+            AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
+                    .setMessage("Are you sure you want to exit?")
+                    .setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which ->
+                        finish()
+                        System.exit(0)
+                    }).setNegativeButton("No", null).show()
+        }
 }
 
 class ThreadAdapter(var threads:MutableList<Thread>): RecyclerView.Adapter<CustomViewHolder>() {
@@ -278,5 +287,6 @@ class CustomViewHolder(val view: View): RecyclerView.ViewHolder(view) {
             return "date"
         }
     }
+
 }
 
