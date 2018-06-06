@@ -1,10 +1,13 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
 
+import android.content.DialogInterface
 import android.content.Intent
+import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -42,10 +45,29 @@ class ThreadActivity : AppCompatActivity() {
                 startActivity(settingIntent)
                 return true
             }
+            R.id.sign_out -> {
+                val builder: AlertDialog.Builder
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            } else {
+                builder = AlertDialog.Builder(this)
+            }
+            builder.setTitle("Sign Out")
+                    .setMessage("Are you sure you want to sign out?")
+                    .setPositiveButton(android.R.string.yes, DialogInterface.OnClickListener { dialog, which ->
+                        FirebaseAuth.getInstance().signOut()
+                        startActivity(Intent(this, MainActivity::class.java))
+                    })
+                    .setNegativeButton(android.R.string.no, DialogInterface.OnClickListener { dialog, which ->
+                        // do nothing
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show()
+               return true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -2,6 +2,7 @@ package edu.piedpiper.uw.ischool.watsonchat
 import android.app.Activity
 import android.support.v7.app.AppCompatActivity
 import android.app.LoaderManager.LoaderCallbacks
+import android.content.DialogInterface
 import android.content.Intent
 
 import android.database.Cursor
@@ -9,12 +10,15 @@ import com.firebase.ui.auth.AuthUI
 import java.util.*
 import java.util.Arrays.asList
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.util.Log
+import android.view.MenuItem
 import android.widget.Toast
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import android.os.Build
 
 
 /**
@@ -36,32 +40,40 @@ class MainActivity : AppCompatActivity() {
                 AuthUI.IdpConfig.GoogleBuilder().build()
         )
 
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .setTheme(R.style.LoginTheme)
-                        .build(),
-                RC_SIGN_IN)
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            startActivityForResult(
+                    AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setAvailableProviders(providers)
+                            .setTheme(R.style.LoginTheme)
+                            .build(),
+                    RC_SIGN_IN)
+        } else {
+            startMessage()
+        }
+    }
+
+    private fun startMessage() {
+        val user = FirebaseAuth.getInstance().currentUser
+        val uid = FirebaseAuth.getInstance().uid
+        val userRef = FirebaseDatabase.getInstance().reference.child("users").child(uid)
+
+        userRef.setValue(user!!.displayName)
+                .addOnSuccessListener(OnSuccessListener<Void> {
+                    Log.i("MessageActivity", "Dafux")
+                    startActivity(Intent(this, ThreadActivity::class.java))
+                    finish()
+                })
+                .addOnFailureListener(OnFailureListener {
+                    Log.i("MessageActivity", "Failure")
+                })
     }
 
     protected override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
-                val user = FirebaseAuth.getInstance().currentUser
-                val uid = FirebaseAuth.getInstance().uid
-                val userRef = FirebaseDatabase.getInstance().reference.child("users").child(uid)
-
-                userRef.setValue(user!!.displayName)
-                        .addOnSuccessListener(OnSuccessListener<Void> {
-                            Log.i("MessageActivity", "Dafux")
-                            startActivity(Intent(this, ThreadActivity::class.java))
-                            finish()
-                        })
-                        .addOnFailureListener(OnFailureListener {
-                            Log.i("MessageActivity", "Failure")
-                        })
+                startMessage()
             }
             if (resultCode == Activity.RESULT_CANCELED) {
 
