@@ -95,7 +95,7 @@ class ProfileActivity : AppCompatActivity() {
                     print("NULL")
                 }
 
-                //val consumption : HashMap<String, Map<String, Double>> = HashMap()
+                val consumption : HashMap<String, Map<String, Double>> = HashMap()
                 val values : HashMap<String, ArrayList<Double>> = HashMap()
                 val needs : HashMap<String, ArrayList<Double>> = HashMap()
                 val personality : HashMap<HashMap<String, ArrayList<Double>>, HashMap<String, ArrayList<Double>>>  = HashMap()
@@ -104,27 +104,31 @@ class ProfileActivity : AppCompatActivity() {
                  * This processes the data for consumption and puts it into a map for easy access
                  */
 
-                /*for (a in 0..profile.consumptionPreferences.size - 1){
-                    val category : String = profile.consumptionPreferences[a].consumptionPreferenceCategoryId
-                    val items : HashMap<String, Double> = HashMap<String, Double>()
+                if (profile.consumptionPreferences != null) {
+                    for (a in 0..profile.consumptionPreferences.size - 1) {
+                        val category: String = profile.consumptionPreferences[a].consumptionPreferenceCategoryId
+                        val items: HashMap<String, Double> = HashMap<String, Double>()
 
-                    for (b in 0..profile.consumptionPreferences[a].consumptionPreferences.size - 1){
-                        items.put(profile.consumptionPreferences[a].consumptionPreferences[b].name,
-                                profile.consumptionPreferences[a].consumptionPreferences[b].score)
+                        for (b in 0..profile.consumptionPreferences[a].consumptionPreferences.size - 1) {
+                            items.put(profile.consumptionPreferences[a].consumptionPreferences[b].name,
+                                    profile.consumptionPreferences[a].consumptionPreferences[b].score)
+                        }
+
+                        consumption.put(category, items)
                     }
-
-                    consumption.put(category, items)
-                } */
+                }
 
                 /**
                  * This processes the data for 'values' and puts it into a map with the value name
                  * as the key and raw score & percentile as values
                  */
-                for(a in 0..profile.values.size - 1){
-                    val value : String = profile.values[a].name
-                    val percentile : Double = profile.values[a].percentile
-                    val raw : Double = profile.values[a].rawScore
-                    values.put(value, arrayListOf(percentile * 100.0, raw * 100.0))
+                if (profile.values != null) {
+                    for (a in 0..profile.values.size - 1) {
+                        val value: String = profile.values[a].name
+                        val percentile: Double = profile.values[a].percentile
+                        val raw: Double = profile.values[a].rawScore
+                        values.put(value, arrayListOf(percentile * 100.0, raw * 100.0))
+                    }
                 }
 
                 println("VALUES MAIN" + values)
@@ -133,39 +137,44 @@ class ProfileActivity : AppCompatActivity() {
                  * This processes the data for 'needs' and puts it into a map with the value name
                  * as the key and raw score & percentile as values
                  */
-                for (a in 0..profile.needs.size - 1){
-                    val need : String = profile.needs[a].name
-                    val percentile : Double = profile.needs[a].percentile
-                    val raw : Double = profile.needs[a].rawScore
 
-                    needs.put(need, arrayListOf(percentile * 100.0, raw * 100.0))
+                if (profile.needs != null) {
+                    for (a in 0..profile.needs.size - 1) {
+                        val need: String = profile.needs[a].name
+                        val percentile: Double = profile.needs[a].percentile
+                        val raw: Double = profile.needs[a].rawScore
+
+                        needs.put(need, arrayListOf(percentile * 100.0, raw * 100.0))
+                    }
                 }
 
                 /**
                  * This processes the data for the 'personality' category.
                  */
-                for (a in 0..profile.personality.size - 1){
-                    val topLevel : HashMap<String, ArrayList<Double>> = HashMap()
-                    val temp : HashMap<String, ArrayList<Double>> = HashMap()
+                if (profile.personality != null) {
+                    for (a in 0..profile.personality.size - 1) {
+                        val topLevel: HashMap<String, ArrayList<Double>> = HashMap()
+                        val temp: HashMap<String, ArrayList<Double>> = HashMap()
 
-                    val p = profile.personality[a].name
-                    val child = profile.personality[a].children
+                        val p = profile.personality[a].name
+                        val child = profile.personality[a].children
 
-                    topLevel.put(p, arrayListOf(profile.personality[a].percentile * 100.0, profile.personality[a].rawScore * 100.0))
-                    for (b in 0..child.size - 1){
+                        topLevel.put(p, arrayListOf(profile.personality[a].percentile * 100.0, profile.personality[a].rawScore * 100.0))
+                        for (b in 0..child.size - 1) {
 
-                        val name : String = child[b].name
-                        val percentile : Double = child[b].percentile
-                        val raw : Double = child[b].rawScore
+                            val name: String = child[b].name
+                            val percentile: Double = child[b].percentile
+                            val raw: Double = child[b].rawScore
 
-                        temp.put(name, arrayListOf(percentile * 100.0, raw * 100.0))
+                            temp.put(name, arrayListOf(percentile * 100.0, raw * 100.0))
+                        }
+                        personality.put(topLevel, temp)
                     }
-                    personality.put(topLevel, temp)
                 }
 
                 // Attaches all the data maps to send with the intent to the overview screen
                 val bundle : Bundle = Bundle()
-                bundle.putSerializable("consumption", values)
+                bundle.putSerializable("consumption", consumption)
                 bundle.putSerializable("values", values)
                 bundle.putSerializable("needs", needs)
                 bundle.putSerializable("personality", personality)

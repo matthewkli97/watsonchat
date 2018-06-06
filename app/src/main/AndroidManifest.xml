@@ -43,7 +43,7 @@
         <activity android:name=".PersonalityConsumption" />
         <activity android:name=".PersonalityPersonality" />
         <activity android:name=".PersonalityValues" />
-        <activity android:name=".ToneChart"></activity>
+        <activity android:name=".ToneChart" />
     </application>
 
 </manifest>
