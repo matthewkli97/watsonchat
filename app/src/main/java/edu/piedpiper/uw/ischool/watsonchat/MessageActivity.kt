@@ -1,5 +1,6 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -17,9 +18,16 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
+import com.firebase.ui.auth.AuthUI
 import com.google.firebase.database.*
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
+import android.net.NetworkInfo
+import android.content.Context.CONNECTIVITY_SERVICE
+import android.content.DialogInterface
+import android.net.ConnectivityManager
+import android.support.v7.app.AlertDialog
 
 
 class MessageActivity : AppCompatActivity() {
@@ -149,52 +157,55 @@ class MessageActivity : AppCompatActivity() {
 
         buttonSubmit.isEnabled = false
         buttonSubmit.setOnClickListener { view ->
+            if(isOnline(this)) {
+                var temp = mutableMapOf<Any, Any>();
+                var userName = FirebaseAuth.getInstance().currentUser!!.displayName
+                var userId = FirebaseAuth.getInstance().currentUser!!.uid
 
-            var temp = mutableMapOf<Any, Any>();
-            var userName = FirebaseAuth.getInstance().currentUser!!.displayName
-            var userId = FirebaseAuth.getInstance().currentUser!!.uid
+                temp.put("userId", userId)
+                temp.put("userName", userName!!)
+                temp.put("time", ServerValue.TIMESTAMP)
+                temp.put("text", message)
 
-            temp.put("userId", userId)
-            temp.put("userName", userName!!)
-            temp.put("time", ServerValue.TIMESTAMP)
-            temp.put("text", message)
+                val key = FirebaseDatabase.getInstance().getReference().child("threads").child(threadId).child("chats").push().key
+                FirebaseDatabase.getInstance().getReference().child("threads").child(threadId).child("chats").child(key).setValue(temp)
+                        .addOnSuccessListener(OnSuccessListener<Void> {
+                            Log.i("MessageActivity", "Success")
+                        })
+                        .addOnFailureListener(OnFailureListener {
+                            Log.i("MessageActivity", "Failure")
+                        })
 
-            val key = FirebaseDatabase.getInstance().getReference().child("threads").child(threadId).child("chats").push().key
-            FirebaseDatabase.getInstance().getReference().child("threads").child(threadId).child("chats").child(key).setValue(temp)
-                    .addOnSuccessListener(OnSuccessListener<Void> {
-                        Log.i("MessageActivity", "Success")
-                    })
-                    .addOnFailureListener(OnFailureListener {
-                        Log.i("MessageActivity", "Failure")
-                    })
+                mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size - 1) }, 100)
 
-            mMessageRecyclerView.postDelayed(Runnable { mMessageRecyclerView.scrollToPosition(mChats!!.size - 1) }, 100)
+                var threadMap = mutableMapOf<String, Any>();
+                threadMap.put("lastMessageTime", ServerValue.TIMESTAMP)
+                threadMap.put("lastMessageText", userName!! + ": " + message)
 
-            var threadMap = mutableMapOf<String, Any>();
-            threadMap.put("lastMessageTime", ServerValue.TIMESTAMP)
-            threadMap.put("lastMessageText", userName!! + ": " + message)
+                FirebaseDatabase.getInstance().getReference().child("threadRef").child(threadId).updateChildren(threadMap)
+                        .addOnSuccessListener(OnSuccessListener<Void> {
+                            Log.i("MessageActivity", "Success to update thread latest message")
+                        })
+                        .addOnFailureListener(OnFailureListener {
+                            Log.i("MessageActivity", "Failure to update thread latest message")
+                        })
 
-            FirebaseDatabase.getInstance().getReference().child("threadRef").child(threadId).updateChildren(threadMap)
-                    .addOnSuccessListener(OnSuccessListener<Void> {
-                        Log.i("MessageActivity", "Success to update thread latest message")
-                    })
-                    .addOnFailureListener(OnFailureListener {
-                        Log.i("MessageActivity", "Failure to update thread latest message")
-                    })
+                val messageRef = FirebaseDatabase.getInstance().reference.child("userMessages").child(userId).child("chat")
+                val messageKey = messageRef.push().key
 
-            val messageRef = FirebaseDatabase.getInstance().reference.child("userMessages").child(userId).child("chat")
-            val messageKey = messageRef.push().key
+                messageRef.child(messageKey).setValue(message)
+                        .addOnSuccessListener(OnSuccessListener<Void> {
+                            Log.i("MessageActivity", "Success to update thread latest message")
+                        })
+                        .addOnFailureListener(OnFailureListener {
+                            Log.i("MessageActivity", "Failure to update thread latest message")
+                        })
 
-            messageRef.child(messageKey).setValue(message)
-                    .addOnSuccessListener(OnSuccessListener<Void> {
-                        Log.i("MessageActivity", "Success to update thread latest message")
-                    })
-                    .addOnFailureListener(OnFailureListener {
-                        Log.i("MessageActivity", "Failure to update thread latest message")
-                    })
-
-            et_message.setText("")
-            message = ""
+                et_message.setText("")
+                message = ""
+            } else {
+                displayAlert()
+            }
         }
 
         val messages = findViewById(R.id.reyclerview_message_list) as RecyclerView
@@ -202,6 +213,29 @@ class MessageActivity : AppCompatActivity() {
         Log.i("Debug", "Debugging101")
         Log.i("Debug", "KEVIN " + tester)
         print(tester)
+    }
+
+    private fun displayAlert() {
+        val builder = AlertDialog.Builder(this)
+        builder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, id ->
+            startActivityForResult(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS), 0)
+        })
+        builder.setNegativeButton("No", DialogInterface.OnClickListener { dialog, id ->
+            dialog.cancel()
+        })
+        builder.setMessage("You are not connected to the Internet. Airplane mode may be on, your wifi could be off" +
+                " or you may not have service. Would you like to go to settings now to try to fix this?")
+                .setTitle("Connectivity Issues")
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    private fun isOnline(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = cm.activeNetworkInfo
+        //should check null because in airplane mode it will be null
+        return netInfo != null && netInfo.isConnected
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
