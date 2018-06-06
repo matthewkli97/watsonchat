@@ -1,12 +1,18 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
+import android.annotation.SuppressLint
+import android.os.StrictMode
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
+import com.firebase.ui.auth.AuthUI.getApplicationContext
 import com.google.firebase.auth.FirebaseAuth
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneOptions
 import java.text.DateFormat.getTimeInstance
 import java.util.*
 
@@ -48,6 +54,8 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
         val textView:View
         if(viewType == VIEW_TYPE_MESSAGE_SENT) {
             textView = LayoutInflater.from(parent.context).inflate(R.layout.item_message_sent, parent, false)
+
+
         } else {
             textView = LayoutInflater.from(parent.context).inflate(R.layout.item_message_received, parent, false)
 
@@ -58,6 +66,7 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
     }
 
     // Replace the contents of a view (invoked by the layout manager)
+    @SuppressLint("RestrictedApi")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
@@ -66,7 +75,103 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
             //loadImageFromURL("https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg", holder.view.findViewById(R.id.image_message_profile))
             val name = holder.view.findViewById(R.id.text_message_name) as TextView
             name.text = myDataset[position].userName
+
+            // POP UP EVENT LISTENER BEGING HERE
+            // NOTE: SCROLL UP TO THE TOP OF OnBindViewHolder FUNCTION TO SEE IMPORTANT NOTE
+            holder.itemView.setOnClickListener{
+                Log.i("Look!", myDataset[position].text )
+                val policy = StrictMode.ThreadPolicy.Builder()
+                        .permitAll().build()
+
+                StrictMode.setThreadPolicy(policy)
+
+                val service = ToneAnalyzer("2017-09-21")
+                service.setUsernameAndPassword("5f3becf6-32ee-43ac-bbbd-2ac42ef7668c", "6fXcNSP88OWu")
+                val text = myDataset[position].text
+
+                val toneOptions = ToneOptions.Builder().text(text).build()
+                val tone = service.tone(toneOptions).execute()
+                val toneArray = tone.sentencesTone
+                //println(toneArray[0])
+                val outputArray = arrayListOf<String>()
+                var result : String = "Tone(s): "
+                println(tone.sentencesTone)
+                if(toneArray != null) {
+                    for (i in toneArray.indices) {
+                        //println(tone.sentencesTone[i].tones[0].toneName)
+                        val tones = toneArray[i].tones
+                        if (tones.size > 0) {
+                            for (i in tones.indices) {
+                                val toneName = tones[i].toneName
+                                if (toneName !in outputArray) {
+
+                                    if (outputArray.size < 1) {
+                                        result += toneName
+                                    } else {
+                                        result += ", " + toneName
+                                    }
+                                    outputArray.add(toneName)
+                                }
+                            }
+                        }
+                    }
+                }
+                if(outputArray.size < 1) {
+                    result = "Can't read tone"
+                }
+                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show()
+            }
+            // POP UP EVENT LISTENER ENDS HERE
+        } else if (getItemViewType(position) == VIEW_TYPE_MESSAGE_SENT) {
+            // POP UP EVENT LISTENER BEGING HERE
+            // NOTE: SCROLL UP TO THE TOP OF OnBindViewHolder FUNCTION TO SEE IMPORTANT NOTE
+            holder.itemView.setOnClickListener{
+                Log.i("Look!", myDataset[position].text )
+                val policy = StrictMode.ThreadPolicy.Builder()
+                        .permitAll().build()
+
+                StrictMode.setThreadPolicy(policy)
+
+                val service = ToneAnalyzer("2017-09-21")
+                service.setUsernameAndPassword("5f3becf6-32ee-43ac-bbbd-2ac42ef7668c", "6fXcNSP88OWu")
+                val text = myDataset[position].text
+
+                val toneOptions = ToneOptions.Builder().text(text).build()
+                val tone = service.tone(toneOptions).execute()
+                val toneArray = tone.sentencesTone
+                //println(toneArray[0])
+                val outputArray = arrayListOf<String>()
+                var result : String = "Tone(s): "
+                println(tone.sentencesTone)
+                if(toneArray != null) {
+                    for (i in toneArray.indices) {
+                        //println(tone.sentencesTone[i].tones[0].toneName)
+                        val tones = toneArray[i].tones
+                        if (tones.size > 0) {
+                            for (i in tones.indices) {
+                                val toneName = tones[i].toneName
+                                if (toneName !in outputArray) {
+
+                                    if (outputArray.size < 1) {
+                                        result += toneName
+                                    } else {
+                                        result += ", " + toneName
+                                    }
+                                    outputArray.add(toneName)
+                                }
+                            }
+                        }
+                    }
+                }
+                if(outputArray.size < 1) {
+                    result = "Can't read tone"
+                }
+                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show()
+            }
+            // POP UP EVENT LISTENER ENDS HERE
         }
+
+
 
         val time = holder.view.findViewById(R.id.text_message_time) as TextView
         time.text = getTimeDate(myDataset[position].time!!)
