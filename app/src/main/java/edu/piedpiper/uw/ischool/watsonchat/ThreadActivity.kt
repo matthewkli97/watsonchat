@@ -1,16 +1,17 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
 
-import android.content.Intent
+import android.content.*
+import android.net.ConnectivityManager
+import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
@@ -27,10 +28,100 @@ class ThreadActivity : AppCompatActivity() {
     var mFirebaseUser: FirebaseUser? = null
     private var mThreads: ArrayList<Thread>? = null
     private var mThreadMap:HashMap<String,Int>? = null
+    private var connectionReciever: BroadcastReceiver? = null
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_profile, menu)
+        return true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(connectionReciever)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    // Code adapted from: https://medium.com/@101/android-toolbar-for-appcompatactivity-671b1d10f354
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when(item!!.itemId){
+            R.id.action_profile -> {
+                val settingIntent = Intent(this, ProfileActivity::class.java)
+                //settingIntent.putExtra("threadId", threadId)
+                //settingIntent.putExtra("threadName", threadName)
+                startActivity(settingIntent)
+                return true
+            }
+            R.id.sign_out -> {
+                val builder: AlertDialog.Builder
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            } else {
+                builder = AlertDialog.Builder(this)
+            }
+            builder.setTitle("Sign Out")
+                    .setMessage("Are you sure you want to sign out?")
+                    .setPositiveButton(android.R.string.yes, DialogInterface.OnClickListener { dialog, which ->
+                        FirebaseAuth.getInstance().signOut()
+                        startActivity(Intent(this, MainActivity::class.java))
+                    })
+                    .setNegativeButton(android.R.string.no, DialogInterface.OnClickListener { dialog, which ->
+                        // do nothing
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show()
+               return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thread)
+
+        connectionReciever = object : BroadcastReceiver() {
+            val current:Boolean? = null
+
+            override fun onReceive(context: Context, intent: Intent) {
+                val dis = findViewById(R.id.disconnected) as TextView
+                if(!isOnline(context)) {
+                    displayAlert(context)
+                    dis.visibility = View.VISIBLE
+                } else {
+                    dis.visibility = View.INVISIBLE
+                }
+            }
+
+            fun isOnline(context: Context): Boolean {
+                val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val netInfo = cm.activeNetworkInfo
+                //should check null because in airplane mode it will be null
+                return netInfo != null && netInfo.isConnected
+            }
+
+            fun displayAlert(context: Context) {
+                val builder = AlertDialog.Builder(context)
+                builder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, id ->
+                    context.startActivity(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS))
+                })
+                builder.setNegativeButton("No", DialogInterface.OnClickListener { dialog, id ->
+                    dialog.cancel()
+                })
+                builder.setMessage("You are not connected to the Internet. Airplane mode may be on, your wifi could be off" +
+                        " or you may not have service. Would you like to go to settings now to try to fix this?")
+                        .setTitle("Connectivity Issues")
+
+                val dialog = builder.create()
+                dialog.show()
+            }
+        }
+
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
@@ -143,15 +234,27 @@ class ThreadActivity : AppCompatActivity() {
                     .addOnSuccessListener(OnSuccessListener<Void> {
                         Log.i("MessageActivity", "Success")
 
-                        val messageIntent = Intent(this, MessageActivity::class.java)
-                        messageIntent.putExtra("threadId", key)
-                        messageIntent.putExtra("threadName", "New Thread")
-                        startActivity(messageIntent)
+//                        val messageIntent = Intent(this, MessageActivity::class.java)
+//                        messageIntent.putExtra("threadId", key)
+//                        messageIntent.putExtra("threadName", "New Thread")
+//                        startActivity(messageIntent)
+
+                        val settingIntent = Intent(this, ThreadSettingActivity::class.java)
+                        settingIntent.putExtra("threadId", key)
+                        settingIntent.putExtra("threadName", "New Thread")
+                        settingIntent.putExtra("new",true)
+                        startActivity(settingIntent)
                     })
                     .addOnFailureListener(OnFailureListener {
                         Log.i("MessageActivity", "Failure")
                     })
         })
+
+        val dis = findViewById(R.id.disconnected) as TextView
+
+        dis.setOnClickListener {
+            startActivity(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS))
+        }
     }
 
     override fun finish() {
@@ -178,10 +281,15 @@ class ThreadActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        overridePendingTransitionExit()
-    }
+
+//    override fun onBackPressed() {
+//            AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
+//                    .setMessage("Are you sure you want to exit?")
+//                    .setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which ->
+//                        finish()
+//                        System.exit(0)
+//                    }).setNegativeButton("No", null).show()
+//        }
 }
 
 class ThreadAdapter(var threads:MutableList<Thread>): RecyclerView.Adapter<CustomViewHolder>() {
@@ -236,5 +344,6 @@ class CustomViewHolder(val view: View): RecyclerView.ViewHolder(view) {
             return "date"
         }
     }
+
 }
 
