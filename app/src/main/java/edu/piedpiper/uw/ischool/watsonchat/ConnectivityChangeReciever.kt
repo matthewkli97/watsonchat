@@ -16,9 +16,7 @@ class ConnectivityChangeReceiver : BroadcastReceiver() {
         Log.i("BroadCast", isOnline(context).toString())
         if(!isOnline(context)) {
             displayAlert(context)
-        } else {
-            context.startActivity(Intent(context, MainActivity::class.java))
-        }
+        } 
     }
 
     fun isOnline(context: Context): Boolean {
