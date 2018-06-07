@@ -141,8 +141,10 @@ class MessageAdapter(private val myDataset: ArrayList<Message>, var context: Con
         val text = holder.view.findViewById(R.id.text_message_body) as TextView
         text.text = myDataset[position].text
 
-        val name = holder.view.findViewById(R.id.text_message_name) as TextView
-        name.text = myDataset[position].userName
+        if(getItemViewType(position) == VIEW_TYPE_MESSAGE_RECEIVED) {
+            val name = holder.view.findViewById(R.id.text_message_name) as TextView
+            name.text = myDataset[position].userName
+        }
     }
 
     fun getTimeDate(timeStamp: Long): String {
