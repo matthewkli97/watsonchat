@@ -26,6 +26,7 @@ import android.net.NetworkInfo
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
 import android.support.v7.app.AlertDialog
+import org.w3c.dom.Text
 
 
 class MessageActivity : AppCompatActivity() {
@@ -42,12 +43,52 @@ class MessageActivity : AppCompatActivity() {
     private var query:DatabaseReference? = null
     private var chatNameListener:ValueEventListener? = null
     private var chatNameRef:DatabaseReference? = null
-    private var connectionReciever: BroadcastReceiver = ConnectivityChangeReceiver()
+    private var connectionReciever: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message)
         setSupportActionBar(toolbar)
+
+        connectionReciever = object : BroadcastReceiver() {
+            val current:Boolean? = null
+
+            override fun onReceive(context: Context, intent: Intent) {
+
+                val dis = findViewById(R.id.disconnected) as TextView
+
+                if(!isOnline(context)) {
+                    displayAlert(context)
+                    dis.visibility = View.VISIBLE
+
+                } else {
+                    dis.visibility = View.INVISIBLE
+                }
+            }
+
+            fun isOnline(context: Context): Boolean {
+                val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val netInfo = cm.activeNetworkInfo
+                //should check null because in airplane mode it will be null
+                return netInfo != null && netInfo.isConnected
+            }
+
+            fun displayAlert(context: Context) {
+                val builder = AlertDialog.Builder(context)
+                builder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, id ->
+                    context.startActivity(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS))
+                })
+                builder.setNegativeButton("No", DialogInterface.OnClickListener { dialog, id ->
+                    dialog.cancel()
+                })
+                builder.setMessage("You are not connected to the Internet. Airplane mode may be on, your wifi could be off" +
+                        " or you may not have service. Would you like to go to settings now to try to fix this?")
+                        .setTitle("Connectivity Issues")
+
+                val dialog = builder.create()
+                dialog.show()
+            }
+        }
 
         registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
@@ -288,18 +329,8 @@ class MessageActivity : AppCompatActivity() {
         registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        //overridePendingTransitionExit()
-        startActivity(Intent(this, ThreadActivity::class.java))
-        finish()
-    }
-
     override fun finish() {
         super.finish()
         overridePendingTransitionExit()
     }
-
-
 }

@@ -1,10 +1,7 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
 
-import android.content.BroadcastReceiver
-import android.content.DialogInterface
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.net.ConnectivityManager
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
@@ -31,7 +28,7 @@ class ThreadActivity : AppCompatActivity() {
     var mFirebaseUser: FirebaseUser? = null
     private var mThreads: ArrayList<Thread>? = null
     private var mThreadMap:HashMap<String,Int>? = null
-    private var connectionReciever: BroadcastReceiver = ConnectivityChangeReceiver()
+    private var connectionReciever: BroadcastReceiver? = null
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -86,6 +83,43 @@ class ThreadActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thread)
+
+        connectionReciever = object : BroadcastReceiver() {
+            val current:Boolean? = null
+
+            override fun onReceive(context: Context, intent: Intent) {
+                val dis = findViewById(R.id.disconnected) as TextView
+                if(!isOnline(context)) {
+                    displayAlert(context)
+                    dis.visibility = View.VISIBLE
+                } else {
+                    dis.visibility = View.INVISIBLE
+                }
+            }
+
+            fun isOnline(context: Context): Boolean {
+                val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val netInfo = cm.activeNetworkInfo
+                //should check null because in airplane mode it will be null
+                return netInfo != null && netInfo.isConnected
+            }
+
+            fun displayAlert(context: Context) {
+                val builder = AlertDialog.Builder(context)
+                builder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, id ->
+                    context.startActivity(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS))
+                })
+                builder.setNegativeButton("No", DialogInterface.OnClickListener { dialog, id ->
+                    dialog.cancel()
+                })
+                builder.setMessage("You are not connected to the Internet. Airplane mode may be on, your wifi could be off" +
+                        " or you may not have service. Would you like to go to settings now to try to fix this?")
+                        .setTitle("Connectivity Issues")
+
+                val dialog = builder.create()
+                dialog.show()
+            }
+        }
 
         registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
@@ -208,6 +242,7 @@ class ThreadActivity : AppCompatActivity() {
                         val settingIntent = Intent(this, ThreadSettingActivity::class.java)
                         settingIntent.putExtra("threadId", key)
                         settingIntent.putExtra("threadName", "New Thread")
+                        settingIntent.putExtra("new",true)
                         startActivity(settingIntent)
                     })
                     .addOnFailureListener(OnFailureListener {
@@ -239,6 +274,7 @@ class ThreadActivity : AppCompatActivity() {
     protected fun overridePendingTransitionExit() {
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
+
 
 //    override fun onBackPressed() {
 //            AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")

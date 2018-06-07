@@ -26,6 +26,7 @@ class ThreadSettingActivity : AppCompatActivity() {
 
     var threadId:String? = null
     var threadName:String? = null
+    var newThread:Boolean? = null
     var etThreadName:String? = null
 
 
@@ -40,6 +41,7 @@ class ThreadSettingActivity : AppCompatActivity() {
 
         registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
+        newThread = intent.getBooleanExtra("new", false)
         threadId = intent.getStringExtra("threadId")
         threadName = intent.getStringExtra("threadName")
         etThreadName = threadName
@@ -105,11 +107,17 @@ class ThreadSettingActivity : AppCompatActivity() {
 
             nameRef.setValue(etThreadName)
             threadName = etThreadName
-            val messageIntent = Intent(this, MessageActivity::class.java)
-            messageIntent.putExtra("threadId", threadId)
-            messageIntent.putExtra("threadName", threadName)
-            startActivity(messageIntent)
 
+            if(newThread == true) {
+                val messageIntent = Intent(this, MessageActivity::class.java)
+                messageIntent.putExtra("threadId", threadId)
+                messageIntent.putExtra("threadName", threadName)
+                startActivity(messageIntent)
+                overridePendingTransitionEnter()
+                finish()
+            } else {
+                onBackPressed()
+            }
         })
 
         et_name.addTextChangedListener(object : TextWatcher {
@@ -154,6 +162,9 @@ class ThreadSettingActivity : AppCompatActivity() {
 
     protected fun overridePendingTransitionExit() {
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+    }
+    protected fun overridePendingTransitionEnter() {
+        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
     }
 
 }

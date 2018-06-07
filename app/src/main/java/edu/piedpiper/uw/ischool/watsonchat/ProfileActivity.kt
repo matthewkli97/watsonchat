@@ -34,10 +34,6 @@ class ProfileActivity : AppCompatActivity() {
         unregisterReceiver(connectionReciever)
     }
 
-    override fun onResume() {
-        super.onResume()
-        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
