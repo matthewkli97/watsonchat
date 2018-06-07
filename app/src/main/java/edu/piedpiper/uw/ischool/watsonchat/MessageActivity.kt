@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.OnSuccessListener
 import android.net.NetworkInfo
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.DialogInterface
+import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.support.v7.app.AlertDialog
 
@@ -50,6 +51,8 @@ class MessageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message)
         setSupportActionBar(toolbar)
+
+        registerReceiver( ConnectivityChangeReceiver(), IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         mChats = arrayListOf()
         mFirebaseAuth = FirebaseAuth.getInstance();
