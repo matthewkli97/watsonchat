@@ -1,7 +1,13 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.StrictMode
+import android.provider.Settings
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
@@ -189,6 +195,8 @@ class MessageAdapter(private val myDataset: ArrayList<Message>) :
             return "date"
         }
     }
+
+
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = myDataset.size
 }

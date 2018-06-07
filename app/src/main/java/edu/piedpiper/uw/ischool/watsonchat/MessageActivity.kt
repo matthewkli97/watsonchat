@@ -288,4 +288,6 @@ class MessageActivity : AppCompatActivity() {
         super.finish()
         overridePendingTransitionExit()
     }
+
+
 }

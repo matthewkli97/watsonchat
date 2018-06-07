@@ -37,10 +37,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_login)
+        if (isOnline(this) != true) {
+            displayAlert()
+        }
 
-        airplaneMode()
-        checkConnection()
+        setContentView(R.layout.activity_login)
 
         val providers = Arrays.asList(
                 AuthUI.IdpConfig.EmailBuilder().build(),
@@ -87,6 +88,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    
 
     override fun startActivity(intent: Intent) {
         super.startActivity(intent)
@@ -100,69 +102,26 @@ class MainActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun displayAlert() {
+        val builder = AlertDialog.Builder(this)
+        builder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, id ->
+            startActivityForResult(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS), 0)
+        })
+        builder.setNegativeButton("No", DialogInterface.OnClickListener { dialog, id ->
+            dialog.cancel()
+        })
+        builder.setMessage("You are not connected to the Internet. Airplane mode may be on, your wifi could be off" +
+                " or you may not have service. Would you like to go to settings now to try to fix this?")
+                .setTitle("Connectivity Issues")
 
-        airplaneMode()
-        checkConnection()
+        val dialog = builder.create()
+        dialog.show()
     }
 
-    @Suppress("DEPRECATED_IDENTITY_EQUALS")
-    fun airplaneMode() {
-        if (Settings.Global.getInt(this.contentResolver,
-                        Settings.Global.AIRPLANE_MODE_ON, 0) !== 0) {
-            val dialog = AlertDialog.Builder(this)
-
-            dialog.setTitle("Airplane Mode")
-            dialog.setMessage("You currently have airplane mode on so features such as chat" +
-                    " and Watson personality analysis might not work as expected. Do you want to head over to settings" +
-                    " to turn it off?")
-
-            dialog.setPositiveButton("Yes") { _, _ ->
-                val intent = Intent(android.provider.Settings.ACTION_AIRPLANE_MODE_SETTINGS)
-                startActivity(intent)
-
-            }
-
-            dialog.setNegativeButton("No") { _, _ ->
-
-            }
-
-            val d: AlertDialog = dialog.create()
-
-            d.show()
-        }
+    private fun isOnline(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = cm.activeNetworkInfo
+        //should check null because in airplane mode it will be null
+        return netInfo != null && netInfo.isConnected
     }
-
-    private fun checkConnection() {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworkInfo = connectivityManager.activeNetworkInfo
-
-        if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
-            val dialog = AlertDialog.Builder(this)
-
-            dialog.setTitle("No Connection")
-
-            dialog.setMessage("You currently have no internet connection so features such as chat" +
-                    " and Watson personality analysis will not work as expected. Do you want to connect" +
-                    " to a wifi network?")
-
-            dialog.setPositiveButton("Yes") { _, _ ->
-                val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
-                startActivity(intent)
-
-            }
-
-            dialog.setNegativeButton("No") { _, _ ->
-
-            }
-
-
-            val d: AlertDialog = dialog.create()
-
-            d.show()
-        }
-    }
-
-
 }

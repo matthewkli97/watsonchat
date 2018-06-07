@@ -52,10 +52,10 @@ class Personality : AppCompatActivity() {
                     } else {
                         val dialog = AlertDialog.Builder(this)
 
-                        dialog.setTitle("No Data")
+                        dialog.setTitle("Not Enough Data")
 
                         dialog.setMessage("You currently have not sent enough texts for us to know what" +
-                                "+ your needs are as a person. Keep texting and check back later!")
+                                " your needs are as a person. Keep texting and check back later!")
 
 
                         dialog.setNeutralButton("Okay") { _, _ ->
@@ -82,10 +82,10 @@ class Personality : AppCompatActivity() {
                     } else {
                         val dialog = AlertDialog.Builder(this)
 
-                        dialog.setTitle("No Data")
+                        dialog.setTitle("Not Enough Data")
 
                         dialog.setMessage("You currently have not sent enough texts for us to know what" +
-                                "+ your consumption habits are. Keep texting and check back later!")
+                                " your consumption habits are. Keep texting and check back later!")
 
 
                         dialog.setNeutralButton("Okay") { _, _ ->
@@ -112,10 +112,10 @@ class Personality : AppCompatActivity() {
                     } else {
                         val dialog = AlertDialog.Builder(this)
 
-                        dialog.setTitle("No Data")
+                        dialog.setTitle("Not Enough Data")
 
                         dialog.setMessage("You currently have not sent enough texts for us to know what" +
-                                "+ your personality type is. Keep texting and check back later!")
+                                " your personality type is. Keep texting and check back later!")
 
 
                         dialog.setNeutralButton("Okay") { _, _ ->
@@ -142,10 +142,10 @@ class Personality : AppCompatActivity() {
                     } else {
                         val dialog = AlertDialog.Builder(this)
 
-                        dialog.setTitle("No Data")
+                        dialog.setTitle("Not Enough Data")
 
                         dialog.setMessage("You currently have not sent enough texts for us to know what" +
-                                "+ your personal values are. Keep texting and check back later!")
+                                " your personal values are. Keep texting and check back later!")
 
 
                         dialog.setNeutralButton("Okay") { _, _ ->
