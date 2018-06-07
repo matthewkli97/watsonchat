@@ -57,6 +57,9 @@ class ProfileActivity : AppCompatActivity() {
         mFirebaseAuth = FirebaseAuth.getInstance();
         val mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
+        val persButton = findViewById(R.id.button2) as Button
+        persButton.isEnabled = false
+        persButton.text = "Loading..."
 
         // Preliminary check to ensure login user
         if (mFirebaseUser == null) {
@@ -84,11 +87,12 @@ class ProfileActivity : AppCompatActivity() {
                 Log.i("bobla", "SPRING QUARTER")
 
                 createFile(messageList)
+                persButton.isEnabled = true
+                persButton.setText("Analyze")
             }
             override fun onCancelled(p0: DatabaseError?) {}
         })
 
-        val persButton = findViewById(R.id.button2) as Button
 
         persButton.setOnClickListener() {
             if (isOnline(this)) {
