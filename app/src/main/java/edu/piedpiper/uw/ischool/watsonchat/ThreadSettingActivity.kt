@@ -163,8 +163,11 @@ class ThreadSettingActivity : AppCompatActivity() {
     protected fun overridePendingTransitionExit() {
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
-    protected fun overridePendingTransitionEnter() {
-        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
-    }
 
+    /**
+     * Overrides the pending Activity transition by performing the "Enter" animation.
+     */
+    protected fun overridePendingTransitionEnter() {
+        overridePendingTransition(R.anim.slide_to_left, R.anim.slide_from_right)
+    }
 }
