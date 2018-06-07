@@ -249,6 +249,12 @@ class ThreadActivity : AppCompatActivity() {
                         Log.i("MessageActivity", "Failure")
                     })
         })
+
+        val dis = findViewById(R.id.disconnected) as TextView
+
+        dis.setOnClickListener {
+            startActivity(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS))
+        }
     }
 
     override fun finish() {

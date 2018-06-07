@@ -1,11 +1,13 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
 import android.content.*
+import android.Manifest
 import android.net.ConnectivityManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.os.StrictMode
+import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.widget.Button
@@ -48,9 +50,16 @@ class ProfileActivity : AppCompatActivity() {
 
         registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                1);
+
+
         mFirebaseAuth = FirebaseAuth.getInstance();
         val mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
+        val persButton = findViewById(R.id.button2) as Button
+        persButton.isEnabled = false
+        persButton.text = "Loading..."
 
         // Preliminary check to ensure login user
         if (mFirebaseUser == null) {
@@ -78,11 +87,12 @@ class ProfileActivity : AppCompatActivity() {
                 Log.i("bobla", "SPRING QUARTER")
 
                 createFile(messageList)
+                persButton.isEnabled = true
+                persButton.setText("Analyze")
             }
             override fun onCancelled(p0: DatabaseError?) {}
         })
 
-        val persButton = findViewById(R.id.button2) as Button
 
         persButton.setOnClickListener() {
             if (isOnline(this)) {
@@ -97,9 +107,10 @@ class ProfileActivity : AppCompatActivity() {
                 try {
                     // Text file implementation (works better than JSON)
                     //  File currently at /sdcard/mytest/txt on my device
-                    val root = File("/sdcard/WatsonUserMessage/WatsonUserMessage.txt")
+
+                    val root = File("/sdcard/WatsonUserMessage.txt")
                     if (!root.exists()) {
-                        root.mkdirs()
+                        root.createNewFile()
                     }
 
                     val sc: Scanner = Scanner(FileInputStream(root))
@@ -271,12 +282,11 @@ class ProfileActivity : AppCompatActivity() {
 
     fun createFile(sBody: ArrayList<String>) {
         try {
-            val root = File(Environment.getExternalStorageDirectory().getPath(), "WatsonUserMessage")
+            val root = File("/sdcard/WatsonUserMessage.txt")
             if (!root.exists()) {
-                root.mkdirs()
+                root.createNewFile()
             }
-            val gpxfile = File(root, "WatsonUserMessage.txt")
-            val output = BufferedWriter(FileWriter(gpxfile, false))
+            val output = BufferedWriter(FileWriter(root, false))
             for(i in 0..(sBody.size - 1)) {
                 output.append(sBody[i])
                 output.newLine()
