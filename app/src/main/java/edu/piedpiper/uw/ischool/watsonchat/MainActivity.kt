@@ -2,10 +2,7 @@ package edu.piedpiper.uw.ischool.watsonchat
 import android.app.Activity
 import android.support.v7.app.AppCompatActivity
 import android.app.LoaderManager.LoaderCallbacks
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 
 import android.database.Cursor
 import android.net.ConnectivityManager
@@ -33,13 +30,22 @@ class MainActivity : AppCompatActivity() {
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private val RC_SIGN_IN = 200
+    private var connectionReciever: BroadcastReceiver = ConnectivityChangeReceiver()
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(connectionReciever)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (isOnline(this) != true) {
-            displayAlert()
-        }
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         setContentView(R.layout.activity_login)
 

@@ -1,7 +1,6 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -25,8 +24,6 @@ import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import android.net.NetworkInfo
 import android.content.Context.CONNECTIVITY_SERVICE
-import android.content.DialogInterface
-import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.support.v7.app.AlertDialog
 
@@ -45,14 +42,14 @@ class MessageActivity : AppCompatActivity() {
     private var query:DatabaseReference? = null
     private var chatNameListener:ValueEventListener? = null
     private var chatNameRef:DatabaseReference? = null
-
+    private var connectionReciever: BroadcastReceiver = ConnectivityChangeReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message)
         setSupportActionBar(toolbar)
 
-        registerReceiver( ConnectivityChangeReceiver(), IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         mChats = arrayListOf()
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -260,6 +257,8 @@ class MessageActivity : AppCompatActivity() {
         }
     }
 
+
+
     override fun startActivity(intent: Intent) {
         super.startActivity(intent)
         overridePendingTransitionEnter()
@@ -278,6 +277,17 @@ class MessageActivity : AppCompatActivity() {
     protected fun overridePendingTransitionExit() {
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(connectionReciever)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
 
     override fun onBackPressed() {
         super.onBackPressed()

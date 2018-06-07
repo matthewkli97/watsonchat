@@ -1,8 +1,6 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.net.ConnectivityManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -29,9 +27,23 @@ class ProfileActivity : AppCompatActivity() {
     lateinit var currentUser: FirebaseUser
     var mFirebaseUser: FirebaseUser? = null
 
+    private var connectionReciever: BroadcastReceiver = ConnectivityChangeReceiver()
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(connectionReciever)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         val mFirebaseUser = mFirebaseAuth.getCurrentUser();

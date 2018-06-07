@@ -1,8 +1,11 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
 
+import android.content.BroadcastReceiver
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -28,11 +31,22 @@ class ThreadActivity : AppCompatActivity() {
     var mFirebaseUser: FirebaseUser? = null
     private var mThreads: ArrayList<Thread>? = null
     private var mThreadMap:HashMap<String,Int>? = null
+    private var connectionReciever: BroadcastReceiver = ConnectivityChangeReceiver()
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_profile, menu)
         return true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(connectionReciever)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
     // Code adapted from: https://medium.com/@101/android-toolbar-for-appcompatactivity-671b1d10f354
@@ -73,6 +87,7 @@ class ThreadActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thread)
 
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();

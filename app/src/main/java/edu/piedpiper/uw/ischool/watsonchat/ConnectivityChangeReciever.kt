@@ -13,7 +13,6 @@ import android.util.Log
 class ConnectivityChangeReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.i("BroadCast", isOnline(context).toString())
         if(!isOnline(context)) {
             displayAlert(context)
         }

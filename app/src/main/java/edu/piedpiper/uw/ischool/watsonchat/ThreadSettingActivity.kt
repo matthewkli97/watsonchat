@@ -1,5 +1,6 @@
 package edu.piedpiper.uw.ischool.watsonchat
 
+import android.content.BroadcastReceiver
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -14,6 +15,8 @@ import com.google.firebase.database.*
 
 import kotlinx.android.synthetic.main.activity_thread_setting.*
 import android.content.DialogInterface
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.support.v7.app.AlertDialog
 //import javax.swing.text.StyleConstants.setIcon
 
@@ -28,11 +31,14 @@ class ThreadSettingActivity : AppCompatActivity() {
 
     var userRef:DatabaseReference? = null
     var userListener:ChildEventListener? = null
+    private var connectionReciever: BroadcastReceiver = ConnectivityChangeReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thread_setting)
         setSupportActionBar(toolbar)
+
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         threadId = intent.getStringExtra("threadId")
         threadName = intent.getStringExtra("threadName")
@@ -134,6 +140,16 @@ class ThreadSettingActivity : AppCompatActivity() {
         super.onBackPressed()
         overridePendingTransitionExit()
         finish()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(connectionReciever)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
     protected fun overridePendingTransitionExit() {
