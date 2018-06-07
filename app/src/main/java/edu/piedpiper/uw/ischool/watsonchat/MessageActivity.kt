@@ -248,6 +248,12 @@ class MessageActivity : AppCompatActivity() {
             }
         }
 
+        val dis = findViewById(R.id.disconnected) as TextView
+
+        dis.setOnClickListener {
+            startActivity(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS))
+        }
+
         val messages = findViewById(R.id.reyclerview_message_list) as RecyclerView
         val tester = messages.adapter.toString()
         Log.i("Debug", "Debugging101")
