@@ -34,6 +34,13 @@ class ProfileActivity : AppCompatActivity() {
         unregisterReceiver(connectionReciever)
     }
 
+    override fun onResume() {
+        super.onResume()
+        registerReceiver( connectionReciever, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -280,7 +287,6 @@ class ProfileActivity : AppCompatActivity() {
             e.printStackTrace()
 
         }
-
     }
 
     // Reads a device from a given file name and stores it as a String to return
