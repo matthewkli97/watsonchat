@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
                 AuthUI.IdpConfig.GoogleBuilder().build()
         )
 
+        // Checks if there is a logged in user
         if (FirebaseAuth.getInstance().currentUser == null) {
             startActivityForResult(
                     AuthUI.getInstance()
@@ -63,11 +64,12 @@ class MainActivity : AppCompatActivity() {
                             .build(),
                     RC_SIGN_IN)
         } else {
-            startMessage()
+            startThread()
         }
     }
 
-    private fun startMessage() {
+    // Starts thread activity
+    private fun startThread() {
         val user = FirebaseAuth.getInstance().currentUser
         val uid = FirebaseAuth.getInstance().uid
         val userRef = FirebaseDatabase.getInstance().reference.child("users").child(uid)
@@ -87,7 +89,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
-                startMessage()
+                startThread()
             }
             if (resultCode == Activity.RESULT_CANCELED) {
 
