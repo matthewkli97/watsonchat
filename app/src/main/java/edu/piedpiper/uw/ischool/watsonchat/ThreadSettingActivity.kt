@@ -120,11 +120,24 @@ class ThreadSettingActivity : AppCompatActivity() {
 
     }
 
+    override fun startActivity(intent: Intent) {
+        super.startActivity(intent)
+        overridePendingTransitionExit()
+    }
 
     override fun onStop() {
         super.onStop()
         userRef!!.removeEventListener(userListener)
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransitionExit()
+        finish()
+    }
+
+    protected fun overridePendingTransitionExit() {
+        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+    }
 
 }

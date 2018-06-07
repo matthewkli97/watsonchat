@@ -225,14 +225,14 @@ class ThreadActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
 
-    override fun onBackPressed() {
-            AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
-                    .setMessage("Are you sure you want to exit?")
-                    .setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which ->
-                        finish()
-                        System.exit(0)
-                    }).setNegativeButton("No", null).show()
-        }
+//    override fun onBackPressed() {
+//            AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
+//                    .setMessage("Are you sure you want to exit?")
+//                    .setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which ->
+//                        finish()
+//                        System.exit(0)
+//                    }).setNegativeButton("No", null).show()
+//        }
 }
 
 class ThreadAdapter(var threads:MutableList<Thread>): RecyclerView.Adapter<CustomViewHolder>() {

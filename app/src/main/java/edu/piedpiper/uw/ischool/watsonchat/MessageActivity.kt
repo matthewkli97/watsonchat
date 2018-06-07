@@ -42,7 +42,6 @@ class MessageActivity : AppCompatActivity() {
     private var threadName:String? = null
     private var chatListener:ChildEventListener? = null
     private var query:DatabaseReference? = null
-
     private var chatNameListener:ValueEventListener? = null
     private var chatNameRef:DatabaseReference? = null
 
@@ -72,7 +71,7 @@ class MessageActivity : AppCompatActivity() {
         mLinearLayoutManager.setStackFromEnd(true);
 
         // Prep recycler adapter
-        val myAdapter = MessageAdapter(mChats!!)
+        val myAdapter = MessageAdapter(mChats!!, this)
         mMessageRecyclerView = findViewById(R.id.reyclerview_message_list) as RecyclerView
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager)
         mMessageRecyclerView.adapter = myAdapter
