@@ -38,11 +38,7 @@ class UserAdapter(context: Context, users: ArrayList<User>, var threadId:String)
             if(isChecked) {
                 threadUserRef.setValue(user.uName)
             } else {
-                val uid = FirebaseAuth.getInstance().currentUser!!.uid
                 threadUserRef.setValue(null)
-                if(uid.equals(user!!.uid)) {
-                    convertView.context.startActivity(Intent(context, ThreadActivity::class.java))
-                }
             }
         })
 

@@ -18,6 +18,8 @@ import android.content.DialogInterface
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.support.v7.app.AlertDialog
+import com.google.firebase.auth.FirebaseAuth
+
 //import javax.swing.text.StyleConstants.setIcon
 
 
@@ -77,9 +79,11 @@ class ThreadSettingActivity : AppCompatActivity() {
 
             override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
                 val uid = dataSnapshot.key
-                val uName = dataSnapshot.value as String
-                val newUser = User(uid, uName, threadUsers.contains(uid))
-                adapter.add(newUser)
+                if (uid != FirebaseAuth.getInstance().currentUser!!.uid) {
+                    val uName = dataSnapshot.value as String
+                    val newUser = User(uid, uName, threadUsers.contains(uid))
+                    adapter.add(newUser)
+                }
             }
         })
 
